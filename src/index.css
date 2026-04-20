@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Add our Nissi HR Brand Fonts here */
+@theme {
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
