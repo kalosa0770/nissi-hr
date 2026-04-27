@@ -1,7 +1,21 @@
+
 @import "tailwindcss";
 
 /* Add our Nissi HR Brand Fonts here */
 @theme {
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-inter: "Inter", sans-serif;
+  --font-agenda: "Agenda Regular", sans-serif;
+  --font-litera: "Litera Regular", sans-serif;
+  
 }
+
+@font-face {
+  font-family: 'Litera Regular';
+  src: url('./assets/fonts/Litera-Regular.ttf') format('truetype');
+
+}
+
+@font-face {
+  font-family: 'Agenda-Regular';
+  src: url('./assets/fonts/Agenda-Regular.ttf') format('truetype');
+}
+

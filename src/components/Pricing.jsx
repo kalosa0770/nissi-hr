@@ -1,98 +1,126 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight, TrendingUp, Calendar } from 'lucide-react';
+import { Check, ShieldCheck, Zap, Building2, Globe } from 'lucide-react';
+
+const pricingOptions = [
+  {
+    title: "Small Business",
+    subtitle: "For emerging teams",
+    impact: "Automate your foundation",
+    features: [
+      "Automated PAYE & NAPSA",
+      "Employee Self-Service",
+      "Digital Leave Management",
+      "Email Payslip Distribution"
+    ],
+    icon: <Zap className="w-6 h-6" />
+  },
+  {
+    title: "Growth & Scale",
+    subtitle: "For expanding companies",
+    impact: "Optimize your workforce",
+    features: [
+      "Advanced Loan Tracking",
+      "Bonus & Deduction Logic",
+      "ZRA Compliance Suite",
+      "Performance Analytics",
+      "Priority Support Access"
+    ],
+    icon: <Building2 className="w-6 h-6" />,
+    featured: true
+  },
+  {
+    title: "Enterprise",
+    subtitle: "For large organizations",
+    impact: "Total operational control",
+    features: [
+      "Unlimited Employee Records",
+      "Custom Salary Structures",
+      "API & System Integration",
+      "Dedicated Success Manager",
+      "Multi-entity Support"
+    ],
+    icon: <Globe className="w-6 h-6" />
+  }
+];
 
 const Pricing = () => {
   return (
-    <section className="py-24 bg-gray-50" id="pricing">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="bg-gray-50 py-24 px-6 relative overflow-hidden flex flex-col items-center">
+      <div className="max-w-7xl w-full relative z-10">
         
-        {/* Section Header */}
-        <div className="mb-16 text-center lg:text-left">
-          <h2 className="text-3xl md:text-5xl font-black text-gray-900 font-montserrat tracking-tight mb-4">
-            Tailored for <span className="text-blue-600">Growth.</span>
-          </h2>
-          <p className="text-gray-500 font-medium">Choose the plan that fits your workforce size.</p>
+        <div className="mb-20">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-agenda font-medium text-slate-800 leading-[1.05] tracking-tight mb-8"
+          >
+            Flexible plans for every stage.
+          </motion.h2>
+          <p className="text-slate-500 font-medium text-lg max-w-2xl font-litera">
+            Scaling your team in Zambia shouldn't be complicated. Our pricing is designed to grow with you, ensuring you only pay for the value you need.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          
-          {/* Tier 1: Small Business */}
-          <motion.div 
-            whileHover={{ y: -10 }}
-            className="bg-gray-50 rounded-[40px] p-8 md:p-12 flex flex-col justify-between border border-gray-100 shadow-sm"
-          >
-            <div>
-              <p className="text-sm font-bold text-gray-500 mb-8 uppercase tracking-widest">
-                Recommended for businesses with 1-50 employees
-              </p>
-              <h3 className="text-4xl font-black text-gray-900 font-montserrat mb-4">Nissi Payroll</h3>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Pay your people securely, accurately and compliantly every time with our automated ZRA engine.
-              </p>
-              <p className="text-2xl font-black text-gray-900 mb-10">
-                From K150<span className="text-sm font-bold text-gray-400">/month</span>
-              </p>
-              
-              <button className="w-full sm:w-auto bg-gray-900 text-white px-10 py-4 rounded-full font-bold hover:bg-blue-600 transition-all mb-12">
-                Discover Nissi Payroll
-              </button>
-            </div>
-
-            {/* UI Mockup Placeholder (Small) */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-auto">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold text-gray-800">You are paying <span className="text-blue-600">12 employees</span></p>
-                <TrendingUp size={16} className="text-green-500" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {pricingOptions.map((option, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className={`relative p-4 rounded-2xl border transition-all duration-500 flex flex-col ${
+                option.featured 
+                ? 'bg-slate-900 border-slate-800 text-white shadow-2xl scale-105 z-20' 
+                : 'bg-white border-slate-100 text-slate-900'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-8 ${
+                option.featured ? 'bg-[#533afd] text-white' : 'bg-white text-[#533afd] shadow-sm'
+              }`}>
+                {option.icon}
               </div>
-              <div className="h-24 bg-blue-50/50 rounded-xl relative overflow-hidden flex items-end">
-                 {/* Simple Chart Representation */}
-                 <div className="w-full h-1/2 bg-blue-600/10 border-t-2 border-blue-600"></div>
-              </div>
-            </div>
-          </motion.div>
 
-          {/* Tier 2: Enterprise/Large Business */}
-          <motion.div 
-            whileHover={{ y: -10 }}
-            className="bg-gray-50 rounded-[40px] p-8 md:p-12 flex flex-col justify-between border border-gray-100 shadow-sm"
-          >
-            <div>
-              <p className="text-sm font-bold text-gray-500 mb-8 uppercase tracking-widest">
-                Recommended for businesses with 50+ employees
+              <span className={`text-xs font-bold uppercase tracking-widest mb-2 ${option.featured ? 'text-blue-400' : 'text-slate-400'}`}>
+                {option.subtitle}
+              </span>
+              <h3 className="text-3xl font-bold mb-4 font-agenda">{option.title}</h3>
+              <p className={`text-sm font-bold mb-8 ${option.featured ? 'text-slate-300' : 'text-[#533afd]'}`}>
+                {option.impact}
               </p>
-              <h3 className="text-4xl font-black text-gray-900 font-montserrat mb-4">Nissi Enterprise</h3>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Next generation payroll and HR in one powerful yet simple integrated solution for scale.
-              </p>
-              <p className="text-2xl font-black text-gray-900 mb-10">
-                Contact us for custom pricing.
-              </p>
-              
-              <button className="w-full sm:w-auto bg-gray-900 text-white px-10 py-4 rounded-full font-bold hover:bg-blue-600 transition-all mb-12">
-                Discover Nissi Enterprise
-              </button>
-            </div>
 
-            {/* UI Mockup Placeholder (Large) */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-auto">
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                 <div className="h-3 w-full bg-gray-100 rounded"></div>
-                 <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
-              </div>
-              <div className="grid grid-cols-7 gap-1">
-                {[...Array(28)].map((_, i) => (
-                  <div key={i} className={`h-4 rounded-sm ${i % 7 === 0 ? 'bg-blue-100' : 'bg-gray-50'}`}></div>
+              <div className="space-y-4 mb-10 flex-grow">
+                {option.features.map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Check size={16} className={option.featured ? 'text-blue-400' : 'text-[#533afd]'} strokeWidth={3} />
+                    <span className={`text-sm font-medium font-litera ${option.featured ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {feature}
+                    </span>
+                  </div>
                 ))}
               </div>
-              <div className="mt-4 flex items-center space-x-2">
-                <Calendar size={12} className="text-gray-400" />
-                <p className="text-[10px] font-bold text-gray-400 uppercase">Leave Management View</p>
-              </div>
-            </div>
-          </motion.div>
 
+              <button className={`w-full py-5 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 group ${
+                option.featured 
+                ? 'bg-[#533afd] text-white hover:bg-[#432fd1]' 
+                : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-100'
+              }`}>
+                Get Pricing
+                <motion.span animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                  →
+                </motion.span>
+              </button>
+            </motion.div>
+          ))}
         </div>
+        
+        <motion.p 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="text-center mt-12 text-slate-400 text-sm font-medium font-litera"
+        >
+          Have more than 500 employees? <button className="text-[#533afd] font-bold underline">Talk to our Enterprise team.</button>
+        </motion.p>
       </div>
     </section>
   );

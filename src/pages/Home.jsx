@@ -5,19 +5,23 @@ import Onboarding from '../components/Onboarding';
 import Pricing from '../components/Pricing';
 import Solutions from '../components/Solutions';
 import ServicesSection from '../components/ServicesSection';
+import LandingPage from '../components/LandingPage';
+import BusinessData from '../components/BusinessData';
+import Features from '../components/Features';
+import SignUpCta from '../components/SignupCta';
 
 const Home = () => {
   return (
     <div>   
-        <Navbar />
-        <section className="relative bg-gray-50 min-h-screen overflow-hidden">
-            <Hero />
-            <Onboarding />
-            <Pricing />
-            <Solutions />
-            <ServicesSection />
-                {/* Additional sections like Features, Testimonials, etc. can be added here */}
-
+        {/* <Navbar /> */}
+        <LandingPage />
+        <section className="relative min-h-screen overflow-hidden">
+          <BusinessData />
+          <Features />
+          <Pricing />
+          <SignUpCta />
+         
+          
                 {/* Background Shape for depth */}
                 <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-blue-600/5 rounded-full -z-10" />
 

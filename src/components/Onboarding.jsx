@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, CheckCircle2, UserPlus, ShieldCheck, ArrowRight, User } from 'lucide-react';
+import { Mail, CheckCircle2, UserPlus, ShieldCheck, ArrowRight, User, FileText, PenTool } from 'lucide-react';
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -15,68 +15,130 @@ const Onboarding = () => {
   };
 
   return (
-    <section className="py-24 overflow-hidden bg-white">
+    <section className="py-24 overflow-hidden bg-gradient-to-br from-slate-50 to-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          
+
           {/* Left Side: Content */}
-          <div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 font-montserrat tracking-tight mb-6">
-              Engage new hires, right from the <span className="text-blue-600">offer letter.</span>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-[#533afd]/10 text-[#533afd] rounded-full text-sm font-bold mb-6">
+              <PenTool size={16} className="mr-2" />
+              Digital Onboarding
+            </div>
+
+            <h2 className="text-4xl md:text-5xl font-agenda font-semibold text-slate-900 tracking-tight mb-6 leading-tight">
+              Engage new hires from the <span className="text-[#533afd]">offer letter</span>
             </h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Don't wait for the first day to start the relationship. Send a digital offer, collect details, and auto-sync to payroll in one flow.
+
+            <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed font-litera">
+              Don't wait for the first day to start the relationship. Send a digital offer, collect details, and auto-sync to payroll in one seamless flow.
             </p>
-            
+
             {/* Step Indicators */}
             <div className="space-y-4">
               {[
-                { id: 1, label: "Draft Digital Offer", icon: <Mail size={18}/> },
-                { id: 2, label: "Candidate Acceptance", icon: <CheckCircle2 size={18}/> },
-                { id: 3, label: "Auto-Onboard to Payroll", icon: <UserPlus size={18}/> },
+                { id: 1, label: "Draft Digital Offer", icon: <Mail size={20}/>, desc: "Create personalized offer letters" },
+                { id: 2, label: "Candidate Acceptance", icon: <CheckCircle2 size={20}/>, desc: "Secure digital signatures" },
+                { id: 3, label: "Auto-Onboard to Payroll", icon: <UserPlus size={20}/>, desc: "Instant payroll integration" },
               ].map((s) => (
-                <div key={s.id} className={`flex items-center space-x-4 transition-opacity ${step === s.id ? 'opacity-100' : 'opacity-40'}`}>
-                  <div className={`p-2 rounded-lg ${step === s.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: s.id * 0.1 }}
+                  className={`flex items-start space-x-4 p-4 rounded-2xl transition-all duration-300 ${
+                    step === s.id
+                      ? 'bg-[#533afd]/5 border border-[#533afd]/20 shadow-sm'
+                      : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className={`p-3 rounded-xl flex-shrink-0 ${
+                    step === s.id
+                      ? 'bg-[#533afd] text-white shadow-lg'
+                      : 'bg-slate-100 text-slate-400'
+                  }`}>
                     {s.icon}
                   </div>
-                  <span className={`font-bold ${step === s.id ? 'text-gray-900' : 'text-gray-500'}`}>{s.label}</span>
-                </div>
+                  <div>
+                    <div className={`font-bold text-lg mb-1 ${
+                      step === s.id ? 'text-slate-900' : 'text-slate-600'
+                    }`}>
+                      {s.label}
+                    </div>
+                    <div className="text-sm text-slate-500">{s.desc}</div>
+                  </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Side: The Interactive Component */}
-          <div className="relative">
-            <motion.div 
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative"
+          >
+            <motion.div
               key={step}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 min-h-[400px] flex flex-col justify-between relative overflow-hidden"
+              className="bg-white rounded-3xl shadow-[0_40px_80px_-15px_rgba(83,58,253,0.15)] border border-slate-100 p-8 min-h-[480px] flex flex-col justify-between relative overflow-hidden"
             >
               {loading && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-3xl">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 border-[#533afd] border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-sm text-slate-600 font-medium">Processing...</p>
+                  </div>
                 </div>
               )}
 
               <AnimatePresence mode="wait">
                 {step === 1 && (
-                  <motion.div key="step1" exit={{ opacity: 0 }}>
-                    <p className="text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Step 01: Create Offer</p>
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">New Candidate Details</h3>
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase">Candidate Name</label>
-                        <div className="w-full p-3 bg-gray-50 rounded-xl border border-gray-100 text-gray-800 font-medium">Bwalya Mwansa</div>
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex-1"
+                  >
+                    <div className="flex items-center mb-6">
+                      <div className="w-8 h-8 bg-[#533afd] rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-bold">1</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase">Role</label>
-                          <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-gray-800 font-medium">Accountant</div>
+                      <p className="text-sm font-bold text-[#533afd] uppercase tracking-wider">Create Offer</p>
+                    </div>
+
+                    <h3 className="text-2xl font-agenda font-semibold text-slate-900 mb-6">New Candidate Details</h3>
+
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Candidate Name</label>
+                        <div className="w-full p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium hover:border-[#533afd]/30 transition-colors">
+                          Bwalya Mwansa
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase">Monthly Basic</label>
-                          <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-gray-800 font-medium font-mono text-sm">K12,500</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Role</label>
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium hover:border-[#533afd]/30 transition-colors">
+                            Accountant
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Monthly Basic</label>
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-mono font-medium hover:border-[#533afd]/30 transition-colors">
+                            K12,500
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -84,47 +146,81 @@ const Onboarding = () => {
                 )}
 
                 {step === 2 && (
-                  <motion.div key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <p className="text-[10px] font-black text-amber-600 uppercase mb-2 tracking-widest">Step 02: Candidate View</p>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Review & Sign</h3>
-                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 mb-6">
-                      <p className="text-xs text-blue-800 leading-relaxed italic">
-                        "I, Bwalya Mwansa, hereby accept the position of Accountant at Nissi HR under the agreed terms of K12,500..."
-                      </p>
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex-1"
+                  >
+                    <div className="flex items-center mb-6">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-white text-sm font-bold">2</span>
+                      </div>
+                      <p className="text-sm font-bold text-amber-600 uppercase tracking-wider">Candidate Review</p>
                     </div>
-                    <div className="flex items-center space-x-2 text-green-600 text-sm font-bold mb-6">
-                      <ShieldCheck size={18} />
-                      <span>Legally Binding Digital Signature</span>
+
+                    <h3 className="text-2xl font-agenda font-semibold text-slate-900 mb-6">Review & Sign Offer</h3>
+
+                    <div className="p-6 bg-gradient-to-r from-[#533afd]/5 to-amber-50 rounded-2xl border border-[#533afd]/10 mb-6">
+                      <div className="flex items-start space-x-3">
+                        <FileText size={20} className="text-[#533afd] mt-1 flex-shrink-0" />
+                        <p className="text-sm text-slate-700 leading-relaxed">
+                          "I, Bwalya Mwansa, hereby accept the position of Accountant at Nissi HR under the agreed terms of K12,500 monthly basic salary..."
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 text-green-600">
+                      <ShieldCheck size={20} />
+                      <span className="font-bold text-sm">Legally Binding Digital Signature</span>
                     </div>
                   </motion.div>
                 )}
 
                 {step === 3 && (
-                  <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
-                      <User size={40} />
+                  <motion.div
+                    key="step3"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex-1 flex flex-col justify-center text-center"
+                  >
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <User size={32} className="text-green-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-                    <p className="text-gray-500 text-sm mb-6">Bwalya has been added to <strong>Payroll April 2026</strong>. <br/>ZRA & NAPSA deductions calculated.</p>
-                    <div className="flex justify-center space-x-2">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold tracking-widest uppercase">ID: NIS-042</span>
+
+                    <h3 className="text-2xl font-agenda font-semibold text-slate-900 mb-3">Onboarding Complete!</h3>
+
+                    <p className="text-slate-600 text-base mb-6 leading-relaxed">
+                      Bwalya has been successfully added to <strong className="text-[#533afd]">Payroll April 2026</strong>.
+                      <br />ZRA & NAPSA deductions automatically calculated.
+                    </p>
+
+                    <div className="flex justify-center">
+                      <span className="px-4 py-2 bg-[#533afd]/10 text-[#533afd] rounded-full text-sm font-bold tracking-wider">
+                        Employee ID: NIS-042
+                      </span>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <button 
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleNextStep}
-                className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center group hover:bg-blue-600 transition-colors"
+                className="w-full bg-[#533afd] hover:bg-[#4330e8] text-white py-4 rounded-2xl font-bold flex items-center justify-center group transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                {step === 3 ? "Reset Demo" : "Next Stage"} 
+                {step === 3 ? "Reset Demo" : "Continue Process"}
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />
-              </button>
+              </motion.button>
             </motion.div>
 
-            {/* Background Blob for depth */}
-            <div className="absolute -z-10 -bottom-10 -right-10 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-30" />
-          </div>
+            {/* Background Elements */}
+            <div className="absolute -z-10 -bottom-16 -right-16 w-64 h-64 bg-[#533afd]/10 rounded-full blur-3xl" />
+            <div className="absolute -z-10 -top-16 -left-16 w-48 h-48 bg-amber-200/30 rounded-full blur-2xl" />
+          </motion.div>
 
         </div>
       </div>
