@@ -9,6 +9,7 @@ import LandingPage from '../components/LandingPage';
 import BusinessData from '../components/BusinessData';
 import Features from '../components/Features';
 import SignUpCta from '../components/SignupCta';
+import Footer from '../components/Footer';
 
 const Home = () => {
   return (
@@ -28,6 +29,7 @@ const Home = () => {
         </section>
 
         {/* Footer can be added here in the future */}
+        <Footer />
         
     </div>
   );
