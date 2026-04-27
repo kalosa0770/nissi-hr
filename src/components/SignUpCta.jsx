@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import signUpImg from '../assets/signup-page.jpg'
+import signUpImg from '../assets/signup-page.jpg';
 
 const SignUpCta = () => {
   return (
     <section className="bg-white py-24 px-6 relative overflow-hidden">
       
-      {/* Background decoration matching your waving flag motion */}
+      {/* Background decoration with fixed separate properties to avoid console warnings */}
       <div className="absolute inset-0 -z-10 opacity-10 pointer-events-none">
          <motion.div 
           animate={{
@@ -16,7 +16,7 @@ const SignUpCta = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
           className="absolute inset-[-10%]"
           style={{
-            background: `linear-gradient(110deg, #fd8f1d, #f894f4, #533afd)`,
+            backgroundImage: `linear-gradient(110deg, #fd8f1d, #f894f4, #533afd)`,
             backgroundSize: '200% 200%',
             filter: 'blur(100px)',
           }}
@@ -26,23 +26,26 @@ const SignUpCta = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
           
-          {/* --- LEFT SIDE: IMAGE PLACEHOLDER --- */}
+          {/* --- LEFT SIDE: IMAGE --- */}
           <motion.div 
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="w-full md:w-1/2"
           >
-            <div className="relative aspect-video md:aspect-square w-full bg-slate-100 rounded-[2rem] overflow-hidden flex items-center justify-center border border-slate-200">
-               {/* REPLACE THE DIV BELOW WITH YOUR <img /> TAG */}
-               <img src={signUpImg} alt='signup image' />
+            <div className="relative aspect-video md:aspect-square w-full bg-slate-100 rounded-[2.5rem] overflow-hidden flex items-center justify-center border border-slate-200 shadow-2xl">
+               <img 
+                 src={signUpImg} 
+                 alt='Nissi HR Signup' 
+                 className="w-full h-full object-cover"
+               />
                
-               {/* Subtle background glow to make the future image pop */}
-               <div className="absolute inset-0 bg-gradient-to-tr from-[#533afd]/5 to-transparent pointer-events-none" />
+               {/* Subtle background glow to make the image pop */}
+               <div className="absolute inset-0 bg-gradient-to-tr from-[#533afd]/10 to-transparent pointer-events-none" />
             </div>
           </motion.div>
 
-          {/* --- RIGHT SIDE: WORDS/CONTENT --- */}
+          {/* --- RIGHT SIDE: CONTENT --- */}
           <motion.div 
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -54,7 +57,7 @@ const SignUpCta = () => {
                 Get Started Free
               </span>
               
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-agenda font-medium text-slate-800 leading-[1.05] tracking-tight mb-8">
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-[1.05] tracking-tighter font-agenda">
                 Sign up in minutes. <br />
                 No credit card.
               </h2>
