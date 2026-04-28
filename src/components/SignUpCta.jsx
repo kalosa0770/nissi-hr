@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import signUpImg from '../assets/signup-page.jpg';
+import signUpImg from '../assets/signup-page.png';
 
 const SignUpCta = () => {
   return (
