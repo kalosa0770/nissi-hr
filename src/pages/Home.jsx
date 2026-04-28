@@ -8,7 +8,7 @@ import ServicesSection from '../components/ServicesSection';
 import LandingPage from '../components/LandingPage';
 import BusinessData from '../components/BusinessData';
 import Features from '../components/Features';
-import SignUpCta from '../components/SignupCta';
+import SignUpCta from '../components/SignUpCta';
 import Footer from '../components/Footer';
 
 const Home = () => {
