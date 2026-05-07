@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, Zap, Users, Laptop, Briefcase, ArrowRight, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import nissiLogo from '../assets/nisi-logo.svg';
 import heroImage from '../assets/notifications.jpg';
 
@@ -137,11 +138,13 @@ const LandingPage = () => {
             </div>
 
             <div className="flex items-center space-x-5 font-litera">
-              <button className="hidden md:block text-sm font-bold text-slate-500">Log in</button>
-              <button className="hidden md:block bg-slate-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm active:scale-95">
+              <Link to="/login" className="hidden md:block text-sm font-bold text-slate-500">
+                Log in
+              </Link>
+              <Link to="/signup" className="hidden md:block bg-slate-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm active:scale-95">
                 Get Started
-              </button>
-              
+              </Link>
+
               {/* Mobile Toggle */}
               <button 
                 onClick={() => setIsOpen(!isOpen)} 
@@ -215,12 +218,12 @@ const LandingPage = () => {
               
               {/* Action Buttons */}
               <div className="fixed bottom-1 left-0 right-0 flex justify-center border-t border-slate-100 space-x-3">
-                <button className="w-full py-2 text-center font-bold text-slate-900 bg-slate-100 rounded-xl text-lg">
+                <Link to="/login" className="w-full py-2 text-center font-bold text-slate-900 bg-slate-100 rounded-xl text-lg">
                   Log In
-                </button>
-                <button className="w-full py-2 text-center font-bold text-white bg-slate-600 rounded-xl shadow-lg shadow-blue-200 text-lg">
+                </Link>
+                <Link to="/signup" className="w-full py-2 text-center font-bold text-white bg-slate-600 rounded-xl shadow-lg shadow-blue-200 text-lg">
                   Get Started
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -240,12 +243,12 @@ const LandingPage = () => {
                 Nissi HR is a hybrid HR & Payroll system built for modern companies in Zambia. Automate your tax, manage leave, and pay your team.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-[#533afd] text-white  p-2 md:p-3 rounded-sm font-bold text-lg flex items-center justify-center group">
+                <Link to="/signup" className="bg-[#533afd] text-white  p-2 md:p-3 rounded-sm font-bold text-lg flex items-center justify-center group">
                   Get Started <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
-                </button>
-                <button className="bg-white/60 backdrop-blur-md text-slate-900 border border-slate-200 p-2 md:p-3 rounded-sm font-bold text-lg flex items-center justify-center">
+                </Link>
+                <Link to="/demo" className="bg-white/60 backdrop-blur-md text-slate-900 border border-slate-200 p-2 md:p-3 rounded-sm font-bold text-lg flex items-center justify-center">
                   <Play className="mr-2 fill-slate-900" size={18} /> Watch Demo
-                </button>
+                </Link>
               </div>
             </motion.div>
 
