@@ -4,6 +4,7 @@ import { Mail, Lock, LogIn, ArrowLeft, Eye, EyeClosed } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { toast } from 'react-toastify';
+import nisiLogo from '/nisi-icon.svg';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const LoginForm = () => {
         const response = await api.post('/api/auth/login', formData);
       
         localStorage.setItem('nisi_token', response.data.token);
-        localStorage.setItem('nisi_user', JSON.stringify(response.data.user));;
+        localStorage.setItem('nisi_user', JSON.stringify(response.data.user));
       
       toast.success("Login Successful!");
       
@@ -73,7 +74,7 @@ const LoginForm = () => {
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg font-black text-3xl mx-auto font-agenda">
-              V
+              <img src={nisiLogo} alt="Nisi Logo" className="w-6 h-6" />
             </div>
             <h1 className="text-4xl font-black text-white tracking-tight font-agenda">
               Welcome <span className="text-blue-500">Back.</span>

@@ -2,42 +2,52 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardContent from '../components/dashboard/DashboardContent';
 import EmployeesContent from '../components/dashboard/EmployeesContent';
+import SettingsContent from '../components/dashboard/SettingsContent';
 
 const DashboardParent = () => {
-  const [activeSection, setActiveSection] = useState('employees');
-  const [userData, setUserData] = useState(null);
+  const [activeSection, setActiveSection] = useState('dashboard');
+
+  // Initialize immediately from localStorage - No flicker!
+  const [userData, setUserData] = useState(() => {
+    const savedUser = localStorage.getItem('nisi_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   useEffect(() => {
-    // 1. Retrieve the token and user info from localStorage
-    const token = localStorage.getItem('nisi_token');
-    
-    // Assuming you saved user details as a stringified object during login
-    // e.g., localStorage.setItem('nisi_user', JSON.stringify(userResponse))
-    const savedUser = localStorage.getItem('nisi_user');
+    // Only handles changes from OTHER tabs/windows
+    const handleStorageChange = () => {
+      const savedUser = localStorage.getItem('nisi_user');
+      setUserData(savedUser ? JSON.parse(savedUser) : null);
+    };
 
-    if (token && savedUser) {
-      setUserData(JSON.parse(savedUser));
-    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Pass userData to the content sections so they can say "Welcome, Elijah"
-  const sections = {
-    dashboard: <DashboardContent user={userData} />,
-    employees: <EmployeesContent user={userData} />,
-    payroll: <div className="p-10 text-white">Payroll Section (Coming Soon)</div>,
+  const renderContent = () => {
+    // We use a mapping object for cleaner code than a switch
+    const sections = {
+      dashboard: <DashboardContent user={userData} />,
+      employees: <EmployeesContent user={userData} />,
+      settings: <SettingsContent user={userData} />,
+      payroll: <div className="p-10 text-white font-agenda">Payroll Section (Coming Soon)</div>,
+      calculator: <div className="p-10 text-white font-agenda">Calculator Section (Coming Soon)</div>,
+    };
+
+    return sections[activeSection] || sections.dashboard;
   };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100 font-sans">
-      
-      {/* Sidebar switches from side-on-desktop to bottom-on-mobile automatically */}
-      <Sidebar active={activeSection} setActive={setActiveSection} user={userData} />
+      <Sidebar 
+        active={activeSection} 
+        setActive={setActiveSection} 
+        user={userData} 
+      />
 
-      {/* pb-24 adds space at the bottom on mobile so the content isn't covered by the Nav bar */}
       <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
-        {sections[activeSection]}
+        {renderContent()}
       </main>
-
     </div>
   );
 };
