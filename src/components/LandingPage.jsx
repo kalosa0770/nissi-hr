@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Zap, Users, Laptop, Briefcase, ArrowRight, Play } from 'lucide-react';
+import { Menu, X, ChevronDown, ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import nissiLogo from '../assets/nisi-logo.svg';
 import heroImage from '../assets/notifications.jpg';
+import { solutions, getSolutionSlug } from '../data/solutions';
 
 const LandingPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,15 +40,10 @@ const LandingPage = () => {
   }, []);
 
   const navLinks = [
-    { 
-      name: 'Solutions', 
+    {
+      name: 'Solutions',
       hasDropdown: true,
-      content: [
-        { title: 'Payroll', desc: 'Compliant PAYE & NAPSA.', icon: <Zap size={18}/> },
-        { title: 'HR Core', desc: 'Employee records & onboarding.', icon: <Users size={18}/> },
-        { title: 'IT Ops', desc: 'Hardware & app management.', icon: <Laptop size={18}/> },
-        { title: 'Compliance', desc: 'Zambian labor law automation.', icon: <Briefcase size={18}/> },
-      ]
+      content: solutions,
     },
     { name: 'About', hasDropdown: false },
     { name: 'Pricing', hasDropdown: false },
@@ -55,6 +51,11 @@ const LandingPage = () => {
 
   const toggleMenu = (name) => {
     setActiveMenu(activeMenu === name ? null : name);
+  };
+
+  const closeMenu = () => {
+    setActiveMenu(null);
+    setIsOpen(false);
   };
 
   return (
@@ -91,20 +92,28 @@ const LandingPage = () => {
               <div className="hidden md:flex items-center space-x-1 font-litera">
                 {navLinks.map((link) => (
                   <div key={link.name} className="relative" ref={link.name === 'Solutions' ? solutionsDropdownRef : null}>
-                    <button 
-                      onClick={() => link.hasDropdown && toggleMenu(link.name)}
-                      className="px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1"
-                    >
-                      {link.name}
-                      {link.hasDropdown && (
+                    {link.hasDropdown ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleMenu(link.name)}
+                        className="px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1"
+                      >
+                        {link.name}
                         <motion.div
                           animate={{ rotate: activeMenu === link.name ? 180 : 0 }}
                           transition={{ duration: 0.2 }}
                         >
                           <ChevronDown size={14} />
                         </motion.div>
-                      )}
-                    </button>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-all"
+                      >
+                        {link.name}
+                      </button>
+                    )}
                     
                     {/* Desktop Dropdown */}
                     <AnimatePresence>
@@ -118,15 +127,20 @@ const LandingPage = () => {
                         >
                           <div className="space-y-2">
                             {link.content.map((item) => (
-                              <div key={item.title} className="flex items-start space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                              <Link
+                                key={item.title}
+                                to={`/solutions/${getSolutionSlug(item.title)}`}
+                                onClick={closeMenu}
+                                className="w-full text-left flex items-start space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"
+                              >
                                 <div className="p-2 bg-[#533afd]/10 rounded-lg text-[#533afd]">
-                                  {item.icon}
+                                  <item.icon size={18} />
                                 </div>
                                 <div>
                                   <div className="text-sm font-bold text-slate-900">{item.title}</div>
                                   <div className="text-xs text-slate-500">{item.desc}</div>
                                 </div>
-                              </div>
+                              </Link>
                             ))}
                           </div>
                         </motion.div>
@@ -199,15 +213,20 @@ const LandingPage = () => {
                       >
                         <div className="pb-6 space-y-3">
                           {link.content.map((item) => (
-                            <div key={item.title} className="flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                            <Link
+                              key={item.title}
+                              to={`/solutions/${getSolutionSlug(item.title)}`}
+                              onClick={closeMenu}
+                              className="w-full text-left flex items-start space-x-4 p-3 rounded-xl hover:bg-slate-50 transition-colors"
+                            >
                               <div className="p-2.5 bg-[#533afd]/10 rounded-xl text-[#533afd]">
-                                {item.icon}
+                                <item.icon size={18} />
                               </div>
                               <div>
                                 <div className="text-base font-bold text-slate-900">{item.title}</div>
                                 <div className="text-sm text-slate-500">{item.desc}</div>
                               </div>
-                            </div>
+                            </Link>
                           ))}
                         </div>
                       </motion.div>
@@ -259,6 +278,7 @@ const LandingPage = () => {
               </div>
             </motion.div>
           </div>
+
         </div>
       </section>
     </div>

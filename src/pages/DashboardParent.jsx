@@ -25,28 +25,35 @@ const DashboardParent = () => {
   }, []);
 
   const renderContent = () => {
-    // We use a mapping object for cleaner code than a switch
     const sections = {
       dashboard: <DashboardContent user={userData} />,
       employees: <EmployeesContent user={userData} />,
       settings: <SettingsContent user={userData} />,
-      payroll: <div className="p-10 text-white font-agenda">Payroll Section (Coming Soon)</div>,
-      calculator: <div className="p-10 text-white font-agenda">Calculator Section (Coming Soon)</div>,
+      payroll: <div className="p-10 text-slate-400 font-agenda">Payroll Section (Coming Soon)</div>,
+      calculator: <div className="p-10 text-slate-400 font-agenda">Calculator Section (Coming Soon)</div>,
     };
 
     return sections[activeSection] || sections.dashboard;
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100 font-sans">
+    // Unified workspace background: slate-50 makes a white/light-gray sidebar feel premium 
+    // If you want a full dark mode application, change this to bg-slate-950 and make the sidebar dark!
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-900 text-slate-100 font-sans antialiased selection:bg-blue-500/30">
+      
+      {/* Responsive Navigation Context */}
       <Sidebar 
         active={activeSection} 
         setActive={setActiveSection} 
         user={userData} 
       />
 
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
-        {renderContent()}
+      {/* Main Presentation Window */}
+      {/* Added pb-32 on mobile to guarantee scrollable elements clear the floating dock perfectly */}
+      <main className="flex-1 overflow-y-auto pt-6 px-4 md:px-10 pb-32 md:pb-10">
+        <div className="max-w-7xl mx-auto">
+          {renderContent()}
+        </div>
       </main>
     </div>
   );
