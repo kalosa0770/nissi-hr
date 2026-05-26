@@ -3,6 +3,7 @@ import Sidebar from '../components/dashboard/Sidebar';
 import DashboardContent from '../components/dashboard/DashboardContent';
 import EmployeesContent from '../components/dashboard/EmployeesContent';
 import SettingsContent from '../components/dashboard/SettingsContent';
+import PayrollContent from '../components/dashboard/PayrollContent';
 
 const DashboardParent = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -29,7 +30,7 @@ const DashboardParent = () => {
       dashboard: <DashboardContent user={userData} />,
       employees: <EmployeesContent user={userData} />,
       settings: <SettingsContent user={userData} />,
-      payroll: <div className="p-10 text-slate-400 font-agenda">Payroll Section (Coming Soon)</div>,
+      payroll: <PayrollContent user={userData} />,
       calculator: <div className="p-10 text-slate-400 font-agenda">Calculator Section (Coming Soon)</div>,
     };
 

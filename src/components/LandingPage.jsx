@@ -45,8 +45,9 @@ const LandingPage = () => {
       hasDropdown: true,
       content: solutions,
     },
-    { name: 'About', hasDropdown: false },
-    { name: 'Pricing', hasDropdown: false },
+    { name: 'About', hasDropdown: false, to: '/#about' },
+    { name: 'Pricing', hasDropdown: false, to: '/#pricing' },
+    { name: 'Waitlist', hasDropdown: false, to: '/waitlist' },
   ];
 
   const toggleMenu = (name) => {
@@ -107,12 +108,13 @@ const LandingPage = () => {
                         </motion.div>
                       </button>
                     ) : (
-                      <button
-                        type="button"
+                      <Link
+                        to={link.to}
+                        onClick={closeMenu}
                         className="px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-all"
                       >
                         {link.name}
-                      </button>
+                      </Link>
                     )}
                     
                     {/* Desktop Dropdown */}
@@ -186,20 +188,28 @@ const LandingPage = () => {
               {/* Nav Links as Dropdowns */}
               {navLinks.map((link) => (
                 <div key={link.name} className="border-b border-slate-100">
-                  <button 
-                    onClick={() => link.hasDropdown && toggleMenu(link.name)}
-                    className="w-full py-4 flex items-center justify-between text-left"
-                  >
-                    <span className="text-xl font-bold text-slate-900">{link.name}</span>
-                    {link.hasDropdown && (
+                  {link.hasDropdown ? (
+                    <button 
+                      onClick={() => toggleMenu(link.name)}
+                      className="w-full py-4 flex items-center justify-between text-left"
+                    >
+                      <span className="text-xl font-bold text-slate-900">{link.name}</span>
                       <motion.div
                         animate={{ rotate: activeMenu === link.name ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
                         <ChevronDown size={24} className="text-slate-400" />
                       </motion.div>
-                    )}
-                  </button>
+                    </button>
+                  ) : (
+                    <Link
+                      to={link.to}
+                      onClick={closeMenu}
+                      className="block w-full py-4 text-xl font-bold text-slate-900"
+                    >
+                      {link.name}
+                    </Link>
+                  )}
                   
                   {/* Dropdown Content */}
                   <AnimatePresence>
@@ -250,7 +260,7 @@ const LandingPage = () => {
       </AnimatePresence>
       
       {/* --- HERO --- */}
-      <section className="relative pt-18 pb-18 md:pt-22 lg:pt-22">
+      <section id="about" className="relative pt-18 pb-18 md:pt-22 lg:pt-22">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-left">

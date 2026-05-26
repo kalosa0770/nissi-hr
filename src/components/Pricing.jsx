@@ -46,7 +46,7 @@ const pricingOptions = [
 
 const Pricing = () => {
   return (
-    <section className="bg-gray-50 py-24 px-6 relative overflow-hidden flex flex-col items-center">
+    <section id="pricing" className="bg-gray-50 py-24 px-6 relative overflow-hidden flex flex-col items-center">
       <div className="max-w-7xl w-full relative z-10">
         
         <div className="mb-20">
