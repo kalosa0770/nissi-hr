@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios'; 
 import { 
   CalendarDays, 
-  Check, 
   X, 
-  Clock, 
   UserCheck, 
-  AlertCircle, 
   Search, 
-  Filter,
-  Loader2
+  Loader2,
+  Phone,
+  Mail,
+  FileText,
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 
 const LeaveStatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
@@ -30,29 +31,29 @@ const LeaveManagementContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [updatingId, setUpdatingId] = useState(null); // Prevents double submission row clicks
+  
+  // Drawer & Detailed Profile States
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [employeeDetails, setEmployeeDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // =========================================================
-  // 🔄 FETCH LEAVE RECORDS VIA AXIOS
-  // =========================================================
   const fetchLeaveRequests = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Axios automatically parses JSON data directly into response.data
       const response = await api.get('api/leaves');
-      setLeaveRequests(response.data || []);
+      // Filter out any lingering historic non-approved states if they exist in the DB
+      const approvedOnly = (response.data || []).filter(req => req.status === 'Approved');
+      setLeaveRequests(approvedOnly);
     } catch (err) {
       console.error("Axios Fetch Error:", err);
-      setError(err.response?.data?.message || 'Failed to pull leave architecture logs.');
+      setError(err.response?.data?.message || 'Failed to fetch leave requests.');
       
-      // Dynamic fallback mock data if backend collection is unpopulated or resting
+      // Seed fallback with only Approved logs
       setLeaveRequests([
-        { _id: "L-102", employeeId: "MHR-004", name: "Mwansa Chilufya", type: "Annual Leave", days: 12, startDate: "2026-06-05", endDate: "2026-06-17", status: "Pending", reason: "Family holiday trip" },
-        { _id: "L-103", employeeId: "MHR-009", name: "Chipo Mwale", type: "Sick Leave", days: 3, startDate: "2026-06-01", endDate: "2026-06-04", status: "Approved", reason: "Medical appointment" },
-        { _id: "L-104", employeeId: "MHR-012", name: "Tinashe Banda", type: "Compassionate", days: 5, startDate: "2026-06-10", endDate: "2026-06-15", status: "Pending", reason: "Urgent personal matter" }
+        { _id: "L-102", employeeId: "MHR-004", name: "Mwansa Chilufya", type: "Annual Leave", days: 12, startDate: "2026-06-05", endDate: "2026-06-17", status: "Approved", reason: "Family holiday trip to Livingstone" },
+        { _id: "L-103", employeeId: "MHR-009", name: "Chipo Mwale", type: "Sick Leave", days: 3, startDate: "2026-05-28", endDate: "2026-06-02", status: "Approved", reason: "Post-malaria medical checkup review" },
+        { _id: "L-104", employeeId: "MHR-012", name: "Tinashe Banda", type: "Compassionate Leave", days: 5, startDate: "2026-06-10", endDate: "2026-06-15", status: "Approved", reason: "Family funeral attendance" }
       ]);
     } finally {
       setLoading(false);
@@ -63,161 +64,145 @@ const LeaveManagementContent = () => {
     fetchLeaveRequests();
   }, []);
 
-  // =========================================================
-  // ⚡ PATCH HANDLER VIA AXIOS (APPROVE / REJECT)
-  // =========================================================
-  const handleStatusUpdate = async (id, newStatus) => {
+  // Deep fetch of employee contact and structural data when opening drawer
+  // Deep fetch of employee contact and structural data when opening drawer
+  const handleRowClick = async (leaveRecord) => {
+    setSelectedLeave(leaveRecord);
+    setLoadingDetails(true);
+    setEmployeeDetails(null);
+    setError(null); // Clear any old errors
+    
     try {
-      setUpdatingId(id);
+      const response = await api.get(`api/employees/${leaveRecord.employeeId}`);
       
-      // Replaced global fetch with your local custom config instance routing setup
-      const response = await api.patch(`api/leaves/${id}`, { status: newStatus });
-      
-      // Sync local component state matrix cleanly
-      setLeaveRequests(prev => 
-        prev.map(req => req._id === id ? { ...req, status: response.data.data.status } : req)
-      );
+      // Defensive check: If your backend returns { success: true, data: { ... } }
+      if (response.data && response.data.data) {
+        setEmployeeDetails(response.data.data);
+      } else {
+        // Fallback if the backend returns the raw employee document directly
+        setEmployeeDetails(response.data);
+      }
     } catch (err) {
-      console.error("Axios Patch Error:", err);
-      // Fallback state mutate for instantaneous local client testing environments
-      setLeaveRequests(prev => prev.map(req => req._id === id ? { ...req, status: newStatus } : req));
+      console.error("Failed to fetch employee details:", err);
+      setError(err.response?.data?.message || 'Failed to sync employee data.');
     } finally {
-      setUpdatingId(null);
+      setLoadingDetails(false);
     }
   };
 
   // =========================================================
-  // 📊 RUN-TIME METRICS CALCULATORS
+  // 📊 TIME-SENSITIVE METRICS LOGIC
   // =========================================================
-  const totalPending = leaveRequests.filter(r => r.status === 'Pending').length;
-  const totalApproved = leaveRequests.filter(r => r.status === 'Approved').length;
+  const totalApprovedArchives = leaveRequests.length;
   
-  // Real-time calculation showing who is explicitly away today
-  const activeOnLeave = leaveRequests.filter(r => {
-    if (r.status !== 'Approved') return false;
+  const activeOnLeaveNow = leaveRequests.filter(r => {
     const today = new Date();
-    return today >= new Date(r.startDate) && today <= new Date(r.endDate);
+    today.setHours(0,0,0,0);
+    const start = new Date(r.startDate);
+    const end = new Date(r.endDate);
+    return today >= start && today <= end;
+  }).length;
+
+  const upcomingAllocations = leaveRequests.filter(r => {
+    return new Date(r.startDate) > new Date();
   }).length;
 
   // =========================================================
-  // 🔍 DATA STREAM INTERACTION PIPELINE
+  // 🔍 SEARCH FILTERS
   // =========================================================
   const filteredRequests = leaveRequests.filter(req => {
     const term = searchTerm.toLowerCase();
-    const matchesSearch = 
+    return (
       req.name?.toLowerCase().includes(term) || 
-      req.employeeId?.toLowerCase().includes(term) || // Fixed the .searchTerm typo
-      req.type?.toLowerCase().includes(term);
-      
-    const matchesStatus = statusFilter === "All" || req.status === statusFilter;
-    return matchesSearch && matchesStatus;
+      req.employeeId?.toLowerCase().includes(term) || 
+      req.type?.toLowerCase().includes(term)
+    );
   });
 
   return (
-    <div className="p-4 md:p-8 lg:p-12 space-y-10">
+    <div className="p-4 md:p-8 lg:p-12 space-y-10 relative">
       
       {/* --- BANNER HEADER --- */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <p className="text-slate-400 font-medium font-litera text-sm">Personnel Availability Mapping</p>
-          <h2 className="text-4xl font-black text-white tracking-tight font-agenda mt-1">Leave Tracking Systems</h2>
-        </div>
+      <header>
+        <p className="text-slate-400 font-medium font-litera text-sm">Leave Management System</p>
+        <h2 className="text-4xl font-black text-white tracking-tight font-agenda mt-1">Approvals </h2>
       </header>
 
       {/* --- METRICS MACRO GRID --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <LeaveStatCard 
-          title="Awaiting Decision" 
-          value={totalPending} 
-          subtitle="Pending structural review" 
-          icon={Clock} 
-          colorClass="border-orange-500/20 text-orange-500 bg-orange-500/5" 
-        />
-        <LeaveStatCard 
-          title="Active Allocations" 
-          value={activeOnLeave} 
-          subtitle="Currently out of office" 
+          title="Currently Out of Office" 
+          value={activeOnLeaveNow} 
+          subtitle="Active absence tracks running today" 
           icon={CalendarDays} 
-          colorClass="border-blue-500/20 text-blue-500 bg-blue-500/5" 
+          colorClass="border-orange-500/20 text-orange-400 bg-orange-500/5" 
         />
         <LeaveStatCard 
-          title="Processed Cycles" 
-          value={totalApproved} 
-          subtitle="Approved requests archive" 
+          title="Scheduled Approved Leaves" 
+          value={upcomingAllocations} 
+          subtitle="Approved periods locked ahead" 
+          icon={Clock} 
+          colorClass="border-blue-500/20 text-blue-400 bg-blue-500/5" 
+        />
+        <LeaveStatCard 
+          title="Total Approved Records" 
+          value={totalApprovedArchives} 
+          subtitle="Complete finalized logs baseline" 
           icon={UserCheck} 
           colorClass="border-emerald-500/20 text-emerald-400 bg-emerald-500/5" 
         />
       </div>
 
-      {/* --- CENTRAL LEAVE MONITOR --- */}
+      {/* --- MONITOR LEDGER PANEL --- */}
       <section className="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/50 p-6 md:p-8 shadow-2xl backdrop-blur-sm">
-        
-        {/* --- CONTROLS PIPELINE BAR --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div className="relative group w-full md:w-80">
+          <div className="relative group w-full md:w-96">
             <input 
               type="search" 
-              placeholder="Search by name or leave parameters..." 
+              placeholder="Filter by staff name, ID, or leave type..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-slate-900/50 border border-slate-800 text-slate-200 pl-12 pr-6 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full transition-all text-sm" 
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
           </div>
-
-          <div className="flex items-center gap-3 self-end md:self-auto">
-            <Filter size={16} className="text-slate-500 hidden sm:block" />
-            <div className="flex bg-slate-950 border border-slate-800/80 p-1 rounded-xl">
-              {["All", "Pending", "Approved", "Rejected"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setStatusFilter(tab)}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${statusFilter === tab ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Status: Administrative Verified Only</p>
         </div>
 
-        {/* --- LEAVE LEDGER DATA TABLE --- */}
         <div className="overflow-x-auto">
-          {loading && leaveRequests.length === 0 ? (
+          {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
               <Loader2 className="animate-spin text-orange-500" size={32} />
-              <p className="text-xs uppercase tracking-widest font-black font-litera">Querying Leave Logs...</p>
+              <p className="text-xs uppercase tracking-widest font-black font-litera">Querying Leave Vectors...</p>
             </div>
           ) : (
-            <table className="w-full text-left border-separate border-spacing-y-3 min-w-[900px]">
+            <table className="w-full text-left border-separate border-spacing-y-3 min-w-[850px]">
               <thead>
                 <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera pl-4">
-                  <th className="pb-3 pl-6">Employee</th>
-                  <th className="pb-3">Leave Classification</th>
-                  <th className="pb-3">Duration Baseline</th>
-                  <th className="pb-3">Timeframe Range</th>
-                  <th className="pb-3 text-center">Status Tag</th>
-                  <th className="pb-3 text-right pr-6">Management Authorization</th>
+                  <th className="pb-3 pl-6">Name</th>
+                  <th className="pb-3">Leave Details</th>
+                  <th className="pb-3">Duration</th>
+                  <th className="pb-3">Start-End Date</th>
+                  <th className="pb-3 pr-6 text-right">View Details</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRequests.map((req) => {
                   const startFormatted = new Date(req.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
                   const endFormatted = new Date(req.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                  const isItemUpdating = updatingId === req._id;
-
+                  
                   return (
-                    <tr key={req._id} className="bg-slate-800/10 border border-slate-800/30 rounded-[1.5rem] hover:bg-slate-800/30 transition-all group">
-                      
-                      {/* Personnel Node Info */}
+                    <tr 
+                      key={req._id} 
+                      onClick={() => handleRowClick(req)}
+                      className="bg-slate-800/10 border border-slate-800/30 rounded-[1.5rem] hover:bg-slate-800/40 transition-all group cursor-pointer"
+                    >
                       <td className="py-4 pl-6 rounded-l-[1.5rem]">
                         <div>
-                          <p className="font-bold text-white font-litera leading-tight group-hover:text-blue-400 transition-colors">{req.name}</p>
+                          <p className="font-bold text-white font-litera leading-tight group-hover:text-orange-400 transition-colors">{req.name}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-0.5">ID: #{req.employeeId}</p>
                         </div>
                       </td>
-
-                      {/* Leave Classification */}
                       <td className="py-4">
                         <span className={`px-3 py-1 rounded-md text-[11px] font-bold ${
                           req.type === 'Sick Leave' ? 'text-rose-400 bg-rose-500/5 border border-rose-500/10' :
@@ -227,60 +212,15 @@ const LeaveManagementContent = () => {
                           {req.type}
                         </span>
                       </td>
-
-                      {/* Leave Days Count */}
                       <td className="py-4 font-bold text-slate-200 text-sm font-litera">
                         {req.days} {req.days === 1 ? 'Day' : 'Days'}
                       </td>
-
-                      {/* Exact Timeline Coordinates */}
                       <td className="py-4 text-slate-400 text-xs font-medium font-poppins">
                         {startFormatted} — {endFormatted}
                       </td>
-
-                      {/* Status Badging Module */}
-                      <td className="py-4">
-                        <div className="flex justify-center">
-                          <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                            req.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            req.status === 'Pending' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
-                            'bg-slate-800 text-slate-500 border border-slate-700/50'
-                          }`}>
-                            {req.status}
-                          </span>
-                        </div>
+                      <td className="py-4 pr-6 rounded-r-[1.5rem] text-right text-slate-500 group-hover:text-slate-300 text-xs font-bold font-litera transition-colors">
+                        View Details →
                       </td>
-
-                      {/* Dynamic Action Trigger Handlers */}
-                      <td className="py-4 pr-6 rounded-r-[1.5rem] text-right">
-                        {isItemUpdating ? (
-                          <div className="flex justify-end pr-4">
-                            <Loader2 className="animate-spin text-slate-500" size={16} />
-                          </div>
-                        ) : req.status === 'Pending' ? (
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => handleStatusUpdate(req._id, 'Approved')}
-                              className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-all"
-                              title="Approve Timeline Request"
-                            >
-                              <Check size={16} strokeWidth={2.5} />
-                            </button>
-                            <button 
-                              onClick={() => handleStatusUpdate(req._id, 'Rejected')}
-                              className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all"
-                              title="Deny Allocation"
-                            >
-                              <X size={16} strokeWidth={2.5} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider font-litera">
-                            Decision finalized
-                          </span>
-                        )}
-                      </td>
-
                     </tr>
                   );
                 })}
@@ -290,11 +230,96 @@ const LeaveManagementContent = () => {
 
           {!loading && filteredRequests.length === 0 && (
             <div className="text-center py-12 text-slate-500 font-medium text-sm font-poppins">
-              No leave applications found matching current monitoring parameters.
+              No approved leave requests found.
             </div>
           )}
         </div>
       </section>
+
+      {/* =========================================================
+          SLIDE-OVER DRAWER: DEEP ANALYTICS & CONTACT DETAILS
+          ========================================================= */}
+      {selectedLeave && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm transition-all">
+          <div className="absolute inset-0" onClick={() => setSelectedLeave(null)} />
+          
+          <div className="relative w-full max-w-md bg-slate-950 border-l border-slate-800/80 h-full shadow-2xl flex flex-col z-10 text-white p-8 space-y-6 overflow-y-auto">
+            
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between border-b border-slate-900 pb-4">
+              <div>
+                <h3 className="text-xl font-black font-agenda text-white">Leave Records</h3>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5">ID: #{selectedLeave._id}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedLeave(null)}
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Core User Summary */}
+            <div className="bg-slate-900/30 border border-slate-900 rounded-2xl p-5 space-y-1">
+              <h4 className="text-lg font-black font-litera text-orange-400">{selectedLeave.name}</h4>
+              <p className="text-xs text-slate-400 font-bold uppercase">{employeeDetails?.jobTitle || 'Loading Position...'} — {employeeDetails?.department}</p>
+              <p className="text-[10px] text-slate-600 font-mono">Employee ID: {selectedLeave.employeeId}</p>
+            </div>
+
+            {/* Leave Justification & Motivation Block */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-500 tracking-wider font-litera">
+                <FileText size={12} className="text-orange-500" />
+                <span>Leave Justification</span>
+              </div>
+              <div className="bg-slate-900/60 border border-slate-800/60 p-4 rounded-xl text-xs text-slate-300 leading-relaxed italic">
+                "{selectedLeave.reason || 'No additional administrative notes provided.'}"
+              </div>
+            </div>
+
+            {/* Contact Vectors & Coordinates Grid */}
+            <div className="space-y-3">
+              <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider font-litera">Contact Details</p>
+              
+              {loadingDetails ? (
+                <div className="flex items-center gap-2 text-xs text-slate-600 py-2">
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>Fetching active communication lines...</span>
+                </div>
+              ) : employeeDetails ? (
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-900">
+                    <Phone size={14} className="text-blue-400" />
+                    <span className="font-mono text-slate-200">{employeeDetails.phone || 'No phone registered'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 bg-slate-900/40 p-3 rounded-xl border border-slate-900">
+                    <Mail size={14} className="text-blue-400" />
+                    <span className="text-slate-200 break-all">{employeeDetails.email}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-rose-500">Failed to fetch employee details.</p>
+              )}
+            </div>
+
+            {/* Wallet Metrics Standings */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-500 tracking-wider font-litera">
+                <ShieldCheck size={12} className="text-emerald-500" />
+                <span>Remaining given leave days</span>
+              </div>
+              <div className="bg-slate-900/40 border border-slate-900 rounded-xl p-4 flex justify-between items-center text-xs">
+                <span className="text-slate-400 font-medium">Remaining Annual Credit Pool</span>
+                <span className="font-black text-white px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg">
+                  {employeeDetails ? `${employeeDetails.leaveBalance} Days` : '...'}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

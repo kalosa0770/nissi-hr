@@ -16,8 +16,8 @@ import nisiLogoWords from '../../assets/nisi-logo.svg';
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, id: 'dashboard' },
   { name: 'Employees', icon: Users, id: 'employees' },
-  { name: 'Payroll', icon: CreditCard, id: 'payroll' },
-  { name: 'Leaves', icon: CalendarDays, id: 'leaves' },
+  { name: 'Payroll Details', icon: CreditCard, id: 'payroll' },
+  { name: 'Leave Management', icon: CalendarDays, id: 'leaves' },
   { name: 'Calculator', icon: Calculator, id: 'calculator' },
 ];
 
