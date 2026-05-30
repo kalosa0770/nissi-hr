@@ -6,6 +6,7 @@ import {
   CreditCard, 
   Calculator, 
   UserCircle,
+  CalendarDays,
   Menu,
   X 
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, id: 'dashboard' },
   { name: 'Employees', icon: Users, id: 'employees' },
   { name: 'Payroll', icon: CreditCard, id: 'payroll' },
+  { name: 'Leaves', icon: CalendarDays, id: 'leaves' },
   { name: 'Calculator', icon: Calculator, id: 'calculator' },
 ];
 

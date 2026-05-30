@@ -3,6 +3,7 @@ import Sidebar from '../components/dashboard/Sidebar';
 import DashboardContent from '../components/dashboard/DashboardContent';
 import EmployeesContent from '../components/dashboard/EmployeesContent';
 import SettingsContent from '../components/dashboard/SettingsContent';
+import LeaveManagementContent from '../components/dashboard/LeaveManagementContent';
 import PayrollContent from '../components/dashboard/PayrollContent';
 
 const DashboardParent = () => {
@@ -31,6 +32,7 @@ const DashboardParent = () => {
       employees: <EmployeesContent user={userData} />,
       settings: <SettingsContent user={userData} />,
       payroll: <PayrollContent user={userData} />,
+      leaves: <LeaveManagementContent user={userData} />,
       calculator: <div className="p-10 text-slate-400 font-agenda">Calculator Section (Coming Soon)</div>,
     };
 
