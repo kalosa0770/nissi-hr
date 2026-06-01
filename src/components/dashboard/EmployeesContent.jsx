@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { 
   Search, 
   Bell, 
-  Filter, 
   Plus, 
   Loader2, 
   X, 
@@ -20,17 +19,14 @@ import {
 } from 'lucide-react';
 
 const StatCard = ({ title, value, color, textDark = false }) => (
-  <div className={`${color} p-8 rounded-[2rem] flex items-center justify-between shadow-xl transition-all duration-300`}>
+  <div className={`${color} p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300 `}>
     <div className="space-y-1">
-      <p className={`text-xs font-bold uppercase tracking-wider ${textDark ? 'text-slate-900/60' : 'text-white/60'}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.25em] ${textDark ? 'text-slate-900/60' : 'text-white/70'}`}>
         {title}
       </p>
-      <p className={`text-5xl font-black ${textDark ? 'text-slate-900' : 'text-white'}`}>
+      <p className={`text-base font-normal ${textDark ? 'text-slate-900' : 'text-white'}`}>
         {value}
       </p>
-    </div>
-    <div className={`w-12 h-12 rounded-full border-4 ${textDark ? 'border-slate-900/10' : 'border-white/20'} flex items-center justify-center`}>
-       <div className={`w-2 h-2 rounded-full ${textDark ? 'bg-slate-900' : 'bg-white'}`} />
     </div>
   </div>
 );
@@ -45,6 +41,7 @@ const EmployeesContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   // Detailed Profile Drawer View States
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
@@ -179,70 +176,73 @@ const EmployeesContent = () => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-slate-400">
         <Loader2 className="animate-spin text-orange-500" size={40} />
-        <p className="font-bold text-sm uppercase tracking-widest font-poppins">Querying Database Cluster...</p>
+        <p className="font-bold text-sm uppercase tracking-widest font-poppins">Getting employees information...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-8 lg:p-12 space-y-10 relative">
+    <div className="p-2 lg:p-4 space-y-10 relative">
       
       {/* --- TOP HEADER --- */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <p className="text-slate-400 font-medium font-litera text-sm">Welcome Back, Elijah</p>
-          <h2 className="text-4xl font-black text-white tracking-tight font-agenda mt-1">Company Employees</h2>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <input 
-              type="search" 
-              placeholder="Search employee..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-900/50 border border-slate-800 text-slate-200 pl-12 pr-6 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-80 transition-all text-sm" 
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
-          </div>
-          <button className="relative p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors">
-            <Bell size={22} />
-            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-slate-950" />
-          </button>
-          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-slate-800">
-             <img src={`https://ui-avatars.com/api/?name=Elijah+Kalosa&background=2575fc&color=fff`} alt="User" />
-          </div>
+          <h2 className="text-4xl font-black text-white md:text-start text-center tracking-tight font-agenda mt-1">Employee List</h2>
+          <p className="mt-2 text-sm md:text-start text-center text-slate-400 max-w-xl">Search and manage staff records easily. Tap the search icon to find people by name or role.</p>
         </div>
       </header>
 
       {/* --- AUTOMATED STATS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Employees" value={totalEmployees} color="bg-orange-500" />
+      <div className="grid grid-cols-3 gap-4 w-full">
+        <StatCard title="Total Employees" value={totalEmployees} color="bg-gradient-to-br from-orange-500 to-orange-600" />
         <StatCard title="Active Employees" value={activeEmployees} color="bg-white" textDark={true} />
-        <StatCard title="Inactive Employees" value={inactiveEmployees} color="bg-indigo-600" />
+        <StatCard title="Inactive Employees" value={inactiveEmployees} color="bg-gradient-to-br from-indigo-600 to-violet-600" />
       </div>
 
       {/* --- EMPLOYEE TABLE CONTAINER --- */}
-      <section className="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/50 p-8 shadow-2xl backdrop-blur-sm">
-        <div className="flex items-center justify-between mb-10">
-          <h3 className="text-2xl font-black text-white font-agenda">Employee List</h3>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-white transition-all text-sm font-bold">
-              <Filter size={18} /> Filter
+      <section className="bg-slate-900/40 rounded-lg border border-slate-800/50 p-2 lg:p-4 shadow-2xl backdrop-blur-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center justify-between mb-10">
+          <h3 className="text-2xl font-black text-white font-agenda text-center">Employee List</h3>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setShowSearch(prev => !prev)}
+              className="w-12 h-12 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex items-center justify-center"
+              aria-label="Open search"
+            >
+              <Search size={18} />
             </button>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20"
+              className="w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20"
+              aria-label="Add employee"
             >
               <Plus size={24} strokeWidth={3} />
             </button>
           </div>
         </div>
+        {showSearch && (
+          <div className="mb-6 flex items-center gap-3 w-full max-w-2xl">
+            <input
+              type="search"
+              placeholder="Search employee..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-900/80 border border-slate-800 text-slate-200 pl-4 pr-12 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+            />
+            <button
+              onClick={() => setShowSearch(false)}
+              className="w-12 h-12 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex items-center justify-center"
+              aria-label="Close search"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
 
         {/* --- CUSTOM TABLE --- */}
         <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
-            <div className="grid grid-cols-6 px-6 mb-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera">
+          <div className="min-w-full">
+            <div className="hidden md:grid grid-cols-6 px-6 mb-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera">
                 <div className="col-span-2">Employee Name</div>
                 <div>Position</div>
                 <div>Department</div>
@@ -261,10 +261,10 @@ const EmployeesContent = () => {
                       <div 
                         key={emp._id} 
                         onClick={() => fetchEmployeeProfile(emp._id)}
-                        className="grid grid-cols-6 items-center bg-slate-800/20 border border-slate-800/30 p-4 rounded-[1.5rem] hover:bg-slate-800/40 transition-all cursor-pointer group"
+                        className="grid grid-cols-1 md:grid-cols-6 items-start gap-4 md:items-center bg-slate-800/20 border border-slate-800/30 p-4 rounded-[1.5rem] hover:bg-slate-800/40 transition-all cursor-pointer group"
                       >
-                          <div className="col-span-2 flex items-center gap-4">
-                              <div className={`w-11 h-11 rounded-full ${colorStyle} flex items-center justify-center font-bold text-slate-900 shadow-lg`}>
+                          <div className="md:col-span-2 flex items-center gap-4">
+                              <div className={`w-11 h-11 rounded-full ${colorStyle} flex items-center justify-center font-bold text-slate-950 shadow-lg`}>
                                   {initials}
                               </div>
                               <div>
@@ -272,11 +272,20 @@ const EmployeesContent = () => {
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">ID: #{emp.employeeId || emp._id.slice(-4)}</p>
                               </div>
                           </div>
-                          <div className="text-slate-400 font-medium text-sm">{emp.jobTitle}</div>
-                          <div className="text-slate-400 font-medium text-sm">{emp.department}</div>
-                          <div className="text-slate-400 font-medium text-sm font-litera">{joinDateFormatted}</div>
-                          <div className="flex justify-center">
-                              <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${emp.status === 'Active' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-slate-700/30 text-slate-400 border border-slate-700'}`}>
+                          <div className="text-slate-400 font-medium text-sm">
+                            <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Position</span>
+                            {emp.jobTitle}
+                          </div>
+                          <div className="text-slate-400 font-medium text-sm">
+                            <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Department</span>
+                            {emp.department}
+                          </div>
+                          <div className="text-slate-400 font-medium text-sm font-litera">
+                            <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Joined</span>
+                            {joinDateFormatted}
+                          </div>
+                          <div className="flex justify-start md:justify-center">
+                              <span className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${emp.status === 'Active' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-slate-700/30 text-slate-400 border border-slate-700'}`}>
                                   {emp.status || 'Active'}
                               </span>
                           </div>
@@ -298,12 +307,12 @@ const EmployeesContent = () => {
   <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm transition-all animate-fade-in">
     <div className="absolute inset-0" onClick={() => !loadingProfile && setSelectedEmployeeId(null)} />
     
-    <div className="relative w-full max-w-2xl bg-slate-950 border-l border-slate-800/80 h-full shadow-2xl flex flex-col z-10 text-white animate-slide-left">
+    <div className="relative w-full max-w-full lg:max-w-2xl bg-slate-950 border-l border-slate-800/80 h-full shadow-2xl flex flex-col z-10 text-white animate-slide-left">
       
       {loadingProfile ? (
         <div className="h-full w-full flex flex-col items-center justify-center gap-3 text-slate-500">
           <Loader2 className="animate-spin text-blue-500" size={32} />
-          <p className="text-xs font-black uppercase tracking-widest font-litera">Parsing Record Node...</p>
+          <p className="text-xs font-black uppercase tracking-widest font-litera">Getting Profile...</p>
         </div>
       ) : profileData ? (
         <div className="flex flex-col h-full overflow-y-auto p-8 space-y-8 pb-20">
@@ -335,7 +344,7 @@ const EmployeesContent = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
                 <Clock size={14} className="text-orange-500" />
-                <h4>Leave Management Engine</h4>
+                <h4>Leave Management System</h4>
               </div>
               <span className="px-3 py-1 rounded-lg bg-orange-500/10 text-orange-400 text-[10px] font-black uppercase tracking-widest">
                 Balance: {profileData.leaveBalance ?? 24} Days Available
@@ -343,31 +352,36 @@ const EmployeesContent = () => {
             </div>
 
             {/* Sub-Form: HR Book Leave Trigger */}
+            {/* Sub-Form: HR Book Leave Trigger */}
             <div className="bg-slate-950/60 border border-slate-800/80 p-5 rounded-2xl space-y-4">
-              <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Log Official Absence Window (HR Admin Override)</p>
+              <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Book a New Leave Request</p>
               
               <form 
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const target = e.target;
+                  
                   const payload = {
                     employeeId: profileData._id,
                     leaveType: target.leaveType.value,
                     startDate: target.startDate.value,
                     endDate: target.endDate.value,
-                    reason: target.reason.value,
-                    status: "Approved" // Automatically committed as approved since HR logs it directly
+                    reason: target.reason.value
                   };
 
                   try {
-                    toast.info("Processing business day matrix variables...", { autoClose: 1500 });
+                    toast.info("Validating employee leave request...", { autoClose: 5000 });
+                    
                     const res = await api.post('/api/leaves/book-manual', payload);
-                    toast.success(res.data?.message || "Absence vector recorded successfully.");
-                    // Re-fetch deep metrics to instantly update leaveBalance and history grids on screen
-                    fetchEmployeeProfile(profileData._id);
+                    toast.success(res.data?.message || "Employee leave request validated and recorded.");
+                    
+                    // 🌟 FORCE REAL-TIME SYNC: Instantly pull refreshed document back to the drawer
+                    await fetchEmployeeProfile(profileData._id);
+                    
+                    // Clear all form text items cleanly
                     target.reset();
                   } catch (err) {
-                    toast.error(err?.response?.data?.message || "Failed to commit leave log metrics.");
+                    toast.error(err?.response?.data?.message || "Failed to validate employee leave request.");
                   }
                 }}
                 className="grid grid-cols-2 gap-4 text-xs font-poppins"
@@ -375,39 +389,41 @@ const EmployeesContent = () => {
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase">Leave Classification Type</label>
                   <select name="leaveType" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 outline-none focus:border-orange-500">
-                    <option value="Annual Leave">Annual Leave (Deducted from Wallet)</option>
-                    <option value="Sick Leave">Sick Leave (Statutory Protection)</option>
+                    <option value="Annual Leave">Annual Leave</option>
+                    <option value="Sick Leave">Sick Leave</option>
                     <option value="Maternity Leave">Maternity Leave</option>
                     <option value="Paternity Leave">Paternity Leave</option>
-                    <option value="Unpaid Leave">Unpaid Leave (Triggers Payroll Deduction)</option>
+                    <option value="Unpaid Leave">Unpaid Leave</option>
                     <option value="Compassionate Leave">Compassionate Leave</option>
+                    <option value="Study Leave">Study Leave</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Start Coordinates</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Start Date</label>
                   <input required type="date" name="startDate" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 outline-none focus:border-orange-500" />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">End Coordinates</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">End Date</label>
                   <input required type="date" name="endDate" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 outline-none focus:border-orange-500" />
                 </div>
 
                 <div className="col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Justification Note / Context</label>
-                  <input required type="text" name="reason" placeholder="e.g., Annual vacation break / Medical certificate attached" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 outline-none focus:border-orange-500" />
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Reason for Leave</label>
+                  <input required type="text" name="reason" placeholder="e.g., Medical break or scheduled annual vacation block" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 outline-none focus:border-orange-500" />
                 </div>
 
-                <button type="submit" className="col-span-2 mt-2 bg-orange-500 hover:bg-orange-600 transition-colors text-slate-950 font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2">
-                  Validate & Record Absence
+                <button type="submit" className="col-span-2 mt-2 bg-orange-500 hover:bg-orange-600 transition-colors text-white font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+                  Record Leave Request
                 </button>
               </form>
             </div>
 
             {/* Render Leave History Sub-Stream */}
             <div className="space-y-2.5">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-litera">Active Absence Tracking History</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-litera">Leave History</p>
               {profileData.leaveHistory && profileData.leaveHistory.length > 0 ? (
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {profileData.leaveHistory.map((hist, idx) => (
@@ -425,7 +441,7 @@ const EmployeesContent = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-600 italic px-2">No historical absence metrics logged yet for this personnel profile node.</p>
+                <p className="text-xs text-slate-600 italic px-2">No historical leave records logged yet for {profileData.name}.</p>
               )}
             </div>
           </div>
@@ -434,12 +450,12 @@ const EmployeesContent = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
               <Building2 size={14} className="text-indigo-500" />
-              <h4>2. Zambian Statutory Compliance Identifiers</h4>
+              <h4>2. Zambian Statutory Compliance Information</h4>
             </div>
             <div className="grid grid-cols-2 gap-4 bg-slate-900/30 border border-slate-800/60 p-5 rounded-2xl text-xs">
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">National NRC Link</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">National Registration Card (NRC)</p>
                   <p className="font-bold text-slate-200 mt-0.5 font-litera">{profileData.nrcNumber}</p>
                 </div>
                 <div>
@@ -449,7 +465,7 @@ const EmployeesContent = () => {
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">ZRA TPIN Protocol</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">ZRA TPIN Number</p>
                   <p className="font-bold text-slate-200 mt-0.5 font-litera">{profileData.zraTpin}</p>
                 </div>
                 <div>
@@ -464,24 +480,24 @@ const EmployeesContent = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
               <Wallet size={14} className="text-orange-500" />
-              <h4>3. Monthly Structural Remuneration Matrix</h4>
+              <h4>3. Financial Compensation Details</h4>
             </div>
             <div className="bg-slate-900/30 border border-slate-800/60 p-5 rounded-2xl space-y-4 text-xs">
               <div className="flex justify-between items-center border-b border-slate-900 pb-3">
-                <span className="font-bold text-orange-400">Basic Contract Base Salary</span>
+                <span className="font-bold text-orange-400">Basic Salary Amount</span>
                 <span className="font-black text-base font-litera text-orange-400">ZK {profileData.compensation?.basicSalary?.toLocaleString() || '0'}</span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-400">
                 <div>
-                  <p className="text-[9px] font-bold uppercase text-slate-600">Housing Allow.</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-600">Housing Allowance.</p>
                   <p className="font-bold text-slate-300 mt-0.5">ZK {profileData.compensation?.allowances?.housing || 0}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold uppercase text-slate-600">Transport Allow.</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-600">Transport Allowance.</p>
                   <p className="font-bold text-slate-300 mt-0.5">ZK {profileData.compensation?.allowances?.transport || 0}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold uppercase text-slate-600">Medical Allow.</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-600">Medical Allowance.</p>
                   <p className="font-bold text-slate-300 mt-0.5">ZK {profileData.compensation?.allowances?.medical || 0}</p>
                 </div>
               </div>
@@ -492,19 +508,19 @@ const EmployeesContent = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
               <CreditCard size={14} className="text-blue-500" />
-              <h4>4. Core Banking Remittance Destination</h4>
+              <h4>4. Financial Remittance Details</h4>
             </div>
             <div className="bg-slate-900/50 border border-slate-900 rounded-2xl p-4 flex items-center justify-between text-xs">
               <div>
                 <p className="font-bold text-white font-litera">{profileData.bankDetails?.bankName} — <span className="text-slate-400 font-medium text-[11px]">{profileData.bankDetails?.branchName} ({profileData.bankDetails?.branchCode})</span></p>
                 <p className="text-slate-500 font-mono mt-1 text-[11px]">ACC_NUM: {profileData.bankDetails?.accountNumber}</p>
               </div>
-              <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-md text-[10px] font-black uppercase tracking-widest">FNB Validated</span>
+              
             </div>
           </div>
         </div>
       ) : (
-        <div className="p-8 text-rose-400 font-bold text-xs">Error compiling explicit record array node.</div>
+        <div className="p-8 text-rose-400 font-bold text-xs">Error generating financial remittance details.</div>
       )}
     </div>
   </div>
@@ -521,8 +537,8 @@ const EmployeesContent = () => {
             
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tight font-agenda text-orange-500">Register Active Personnel</h3>
-                <p className="text-xs text-slate-400 font-medium font-poppins">Inject explicit data records into core payroll architecture nodes.</p>
+                <h3 className="text-xl font-black uppercase tracking-tight font-agenda text-orange-500">Register Employee</h3>
+                <p className="text-xs text-slate-400 font-medium font-poppins">Fill in the details below to register a new employee.</p>
               </div>
               <button 
                 disabled={formSubmitting}
@@ -544,7 +560,7 @@ const EmployeesContent = () => {
               
               {/* SECTION: Identity Block */}
               <div className="space-y-4">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">1. Core Personal Coordinates</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">1. Personal Information</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-slate-400 uppercase">First Name</label>
@@ -557,11 +573,11 @@ const EmployeesContent = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase">Corporate Email</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase">Email Address</label>
                     <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase">Phone Link</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase">Phone Number</label>
                     <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500" />
                   </div>
                 </div>
@@ -581,7 +597,7 @@ const EmployeesContent = () => {
 
               {/* SECTION: Statutory Checks */}
               <div className="space-y-4 pt-4 border-t border-slate-900">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">2. Zambian Statutory Identifiers</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">2. Zambian Statutory Information</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-slate-400 uppercase">NRC Number</label>
@@ -606,10 +622,10 @@ const EmployeesContent = () => {
 
               {/* SECTION: Bank Details */}
               <div className="space-y-4 pt-4 border-t border-slate-900">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">3. Remittance & Banking Vectors</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">3. Bank Details</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase">Bank Node</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase">Bank Name</label>
                     <select name="bankName" value={formData.bankName} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500 bg-slate-950">
                       {["FNB", "Stanbic", "ABSA", "Standard Chartered", "ZANACO", "Indo Zambia", "Atlas Mara"].map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
@@ -633,10 +649,10 @@ const EmployeesContent = () => {
 
               {/* SECTION: Remuneration Values */}
               <div className="space-y-4 pt-4 border-t border-slate-900">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">4. Structural Base Compensation (ZMW)</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">4. Remuneration Values</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-400 uppercase text-orange-500">Basic Monthly Contract Salary</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase text-orange-500">Basic Monthly Salary</label>
                     <input required type="number" name="basicSalary" value={formData.basicSalary} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white outline-none focus:border-blue-500 font-bold text-orange-400" />
                   </div>
                   <div className="space-y-1">
@@ -663,7 +679,7 @@ const EmployeesContent = () => {
                   type="submit" 
                   className="flex-1 bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {formSubmitting ? <Loader2 className="animate-spin" size={16} /> : "Compile & Commit"}
+                  {formSubmitting ? <Loader2 className="animate-spin" size={16} /> : "Submit Registration"}
                 </button>
                 <button 
                   type="button" 

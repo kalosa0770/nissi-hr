@@ -4,7 +4,8 @@ import {
   LayoutDashboard, 
   Users, 
   CreditCard, 
-  Calculator, 
+  Calculator,
+  Bell, 
   UserCircle,
   CalendarDays,
   Menu,
@@ -18,7 +19,7 @@ const menuItems = [
   { name: 'Employees', icon: Users, id: 'employees' },
   { name: 'Payroll Details', icon: CreditCard, id: 'payroll' },
   { name: 'Leave Management', icon: CalendarDays, id: 'leaves' },
-  { name: 'Calculator', icon: Calculator, id: 'calculator' },
+  { name: 'Notifications', icon: Bell, id: 'notifications' },
 ];
 
 const Sidebar = ({ active, setActive, user }) => {

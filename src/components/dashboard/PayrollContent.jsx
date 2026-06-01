@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, RefreshCw, Layers, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Download, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 const PayrollContent = () => {
   const [payrollEntries, setPayrollEntries] = useState([]);
@@ -55,83 +55,125 @@ const PayrollContent = () => {
     }).format(val).replace('ZMW', 'ZK');
   };
 
+  const downloadPayrollCsv = () => {
+    if (!filteredEntries.length) return;
+
+    const headers = [
+      'Employee ID',
+      'Name',
+      'Job Title',
+      'Basic Salary',
+      'Allowances',
+      'PAYE',
+      'NAPSA',
+      'NHIMA',
+      'Gross Pay',
+      'Net Pay'
+    ];
+
+    const rows = filteredEntries.map((entry) => [
+      entry.employeeId,
+      entry.name,
+      entry.jobTitle,
+      entry.basicSalary || 0,
+      entry.meta?.totalAllowances || 0,
+      entry.deductions?.paye || 0,
+      entry.deductions?.napsa || 0,
+      entry.deductions?.nhima || 0,
+      entry.grossPay || 0,
+      entry.netPay || 0
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `payroll-${currentMonth.replace(/\s+/g, '-').toLowerCase()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="p-4 md:p-8 lg:p-12 space-y-10">
+    <div className="p-2 lg:p-4 space-y-10 relative">
       
-      {/* --- TOP BANNER INTERACTIVE ROUTER --- */}
+      {/* --- TOP HEADER --- */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <p className="text-slate-400 font-medium font-litera text-sm">Financial Accounting Nodes</p>
-          <h2 className="text-4xl font-black text-white tracking-tight font-agenda mt-1">Payroll Ledger</h2>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <select 
-            value={currentMonth} 
-            onChange={(e) => setCurrentMonth(e.target.value)}
-            className="bg-slate-900 border border-slate-800 text-slate-200 px-5 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm transition-all"
-          >
-            <option value="May 2026">May 2026</option>
-            <option value="June 2026">June 2026</option>
-          </select>
-
-          <button 
-            onClick={fetchPayrollDetails}
-            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-            title="Refresh Data Nodes"
-          >
-            <RefreshCw size={20} />
-          </button>
+          <h2 className="text-4xl font-black text-white md:text-start text-center tracking-tight font-agenda mt-1">Payroll Summary</h2>
+          <p className="mt-2 text-sm md:text-start text-center text-slate-400 max-w-xl">Review payroll totals and individual employee breakdowns. Select a month and search to find payroll details.</p>
         </div>
       </header>
 
-      {/* --- LIVE BATCH STATUS SUMMARY CARD --- */}
+      {/* --- AUTOMATED STATS GRID --- */}
       {summary && (
-        <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-blue-950/20 border border-slate-800/80 rounded-[2rem] p-6 md:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 relative overflow-hidden shadow-2xl">
-          <div className="space-y-1">
-            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase font-litera">Aggregate Gross Pay</p>
-            <p className="text-2xl font-black text-white">{formatZMW(summary.totalGrossPay)}</p>
+        <div className="grid grid-cols-3 gap-4 w-full">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Gross Pay</p>
+              <p className="text-base font-normal text-white">{formatZMW(summary.totalGrossPay)}</p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase font-litera">Total Statutory Deductions</p>
-            <p className="text-2xl font-black text-rose-400">{formatZMW(summary.totalDeductions)}</p>
+          <div className="bg-gradient-to-br from-rose-600 to-rose-700 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Deductions</p>
+              <p className="text-base font-normal text-white">{formatZMW(summary.totalDeductions)}</p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase font-litera">Disbursable Net Pay</p>
-            <p className="text-2xl font-black text-emerald-400">{formatZMW(summary.totalNetPay)}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase font-litera">Engine Verification</p>
-            <div className="flex items-center gap-2 text-blue-400 font-bold text-sm mt-1">
-              <CheckCircle2 size={16} /> <span>Locked & Checked</span>
+          <div className="bg-white p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-900/60">Net Pay</p>
+              <p className="text-base  font-normal text-slate-900">{formatZMW(summary.totalNetPay)}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- LEDGER TABLE BLOCK --- */}
-      <section className="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/50 p-6 md:p-8 shadow-2xl backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div className="relative group w-full md:w-80">
+      {/* --- PAYROLL LEDGER CONTAINER --- */}
+      <section className="bg-slate-900/40 rounded-lg border border-slate-800/50 p-2 lg:p-4 shadow-2xl backdrop-blur-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center justify-between mb-10">
+          <h3 className="text-2xl font-black text-white font-agenda text-center">Payroll Ledger</h3>
+          <div className="flex items-center justify-between gap-3">
+            <select 
+              value={currentMonth} 
+              onChange={(e) => setCurrentMonth(e.target.value)}
+              className="bg-slate-800/70 border border-slate-700 text-slate-300 px-4 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm transition-all"
+            >
+              <option value="May 2026">May 2026</option>
+              <option value="June 2026">June 2026</option>
+            </select>
+            <button
+              onClick={downloadPayrollCsv}
+              disabled={!filteredEntries.length || loading}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-all text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20"
+            >
+              <Download size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center justify-between mb-8">
+          <div className="relative group w-full lg:max-w-sm">
             <input 
               type="search" 
-              placeholder="Search statements..." 
+              placeholder="Search employee..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-900/50 border border-slate-800 text-slate-200 pl-12 pr-6 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full transition-all text-sm" 
+              className="bg-slate-900/80 border border-slate-800 text-slate-200 pl-12 pr-4 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full transition-all text-sm" 
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
           </div>
-
-          <button className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-800/40 border border-slate-700/60 text-slate-300 hover:text-white transition-all text-sm font-bold shadow-md">
-            <Download size={18} /> Export Bank File
-          </button>
         </div>
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
             <Loader2 className="animate-spin text-blue-500" size={32} />
-            <p className="text-xs uppercase tracking-widest font-black font-litera">Compiling Balance Arrays...</p>
+            <p className="text-xs uppercase tracking-widest font-black font-litera">Processing Payroll Data...</p>
           </div>
         ) : error ? (
           <div className="py-16 text-center max-w-md mx-auto space-y-3">
@@ -142,69 +184,58 @@ const PayrollContent = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-separate border-spacing-y-3 min-w-[1000px]">
-              <thead>
-                <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera px-4">
-                  <th className="pb-3 pl-6">Personnel Details</th>
-                  <th className="pb-3">Basic Salary</th>
-                  <th className="pb-3">Allowances</th>
-                  <th className="pb-3">Statutory Deductions</th>
-                  <th className="pb-3 text-orange-400">Gross Pay</th>
-                  <th className="pb-3 text-emerald-400">Net Pay</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEntries.map((emp) => (
-                  <tr 
-                    key={emp.employeeId}
-                    className="bg-slate-800/10 border border-slate-800/30 rounded-[1.5rem] hover:bg-slate-800/30 transition-all cursor-pointer group"
-                  >
-                    {/* Column 1: Info */}
-                    <td className="py-4 pl-6 rounded-l-[1.5rem]">
-                      <div>
-                        <p className="font-bold text-white font-litera leading-tight group-hover:text-blue-400 transition-colors">{emp.name}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-0.5">{emp.jobTitle} • ID: #{emp.employeeId}</p>
-                      </div>
-                    </td>
-                    
-                    {/* Column 2: Basic Base */}
-                    <td className="py-4 text-slate-300 font-medium text-sm font-litera">
-                      {formatZMW(emp.basicSalary)}
-                    </td>
-                    
-                    {/* Column 3: Allowances */}
-                    <td className="py-4 text-slate-400 text-sm font-litera">
-                      {formatZMW(emp.meta?.totalAllowances || 0)}
-                    </td>
-                    
-                    {/* Column 4: Deductions Dropdown View summary */}
-                    <td className="py-4">
-                      <div className="space-y-0.5 text-[11px] text-slate-500 font-medium font-poppins">
-                        <p><span className="text-slate-600">PAYE:</span> {formatZMW(emp.deductions?.paye)}</p>
-                        <p><span className="text-slate-600">NAPSA:</span> {formatZMW(emp.deductions?.napsa)}</p>
-                        <p><span className="text-slate-600">NHIMA:</span> {formatZMW(emp.deductions?.nhima)}</p>
-                      </div>
-                    </td>
-                    
-                    {/* Column 5: Gross Value */}
-                    <td className="py-4 text-orange-400/90 font-bold text-sm font-litera">
-                      {formatZMW(emp.grossPay)}
-                    </td>
-                    
-                    {/* Column 6: Final Take-home Net */}
-                    <td className="py-4 text-emerald-400 font-black text-sm font-litera rounded-r-[1.5rem]">
-                      {formatZMW(emp.netPay)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {filteredEntries.length === 0 && (
-              <div className="text-center py-12 text-slate-500 font-medium text-sm font-poppins">
-                No payroll items found matching that selection.
+            <div className="min-w-full">
+              <div className="hidden md:grid grid-cols-6 px-6 mb-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera">
+                <div className="col-span-2">Employee Name</div>
+                <div>Basic Salary</div>
+                <div>Allowances</div>
+                <div>Deductions</div>
+                <div className="text-right">Net Pay</div>
               </div>
-            )}
+
+              <div className="space-y-3">
+                {filteredEntries.map((emp) => {
+                  return (
+                    <div 
+                      key={emp.employeeId}
+                      className="grid grid-cols-1 md:grid-cols-6 items-start gap-4 md:items-center bg-slate-800/20 border border-slate-800/30 p-4 rounded-[1.5rem] hover:bg-slate-800/40 transition-all cursor-pointer group"
+                    >
+                      <div className="md:col-span-2 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center font-bold text-slate-950 shadow-lg flex-shrink-0">
+                          {emp.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="font-bold text-white font-litera leading-tight group-hover:text-blue-400 transition-colors">{emp.name}</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">ID: #{emp.employeeId}</p>
+                        </div>
+                      </div>
+                      <div className="text-slate-400 font-medium text-sm">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Basic Salary</span>
+                        {formatZMW(emp.basicSalary)}
+                      </div>
+                      <div className="text-slate-400 font-medium text-sm">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Allowances</span>
+                        {formatZMW(emp.meta?.totalAllowances || 0)}
+                      </div>
+                      <div className="text-slate-400 font-medium text-sm">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Deductions</span>
+                        {formatZMW((emp.deductions?.paye || 0) + (emp.deductions?.napsa || 0) + (emp.deductions?.nhima || 0))}
+                      </div>
+                      <div className="text-emerald-400 font-black text-sm font-litera text-right">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1 text-left">Net Pay</span>
+                        {formatZMW(emp.netPay)}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredEntries.length === 0 && (
+                  <div className="text-center py-12 text-slate-500 font-medium text-sm font-poppins">
+                    No payroll items found matching that selection.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </section>

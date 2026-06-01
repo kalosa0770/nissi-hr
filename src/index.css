@@ -3,7 +3,7 @@
 
 /* Add our Nissi HR Brand Fonts here */
 @theme {
-  --font-agenda: "Agenda Regular", sans-serif;
+  --font-agenda: "Montserrat Regular", sans-serif;
   --font-litera: "Litera Regular", sans-serif;
   
 }
@@ -15,8 +15,8 @@
 }
 
 @font-face {
-  font-family: 'Agenda-Regular';
-  src: url('./assets/fonts/Agenda-Regular.ttf') format('truetype');
+  font-family: 'Montserrat-Regular';
+  src: url('./assets/fonts/Montserrat-Regular.ttf') format('truetype');
 }
 
 

@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios'; 
 import { 
-  CalendarDays, 
-  X, 
-  UserCheck, 
   Search, 
+  X, 
   Loader2,
   Phone,
   Mail,
   FileText,
-  Clock,
   ShieldCheck
 } from 'lucide-react';
-
-const LeaveStatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
-  <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-[2rem] flex items-center justify-between shadow-xl backdrop-blur-sm group hover:border-slate-700 transition-all">
-    <div className="space-y-2">
-      <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] font-litera">{title}</p>
-      <h3 className="text-3xl font-black text-white font-agenda tracking-tight">{value}</h3>
-      <p className="text-xs text-slate-400 font-medium font-poppins">{subtitle}</p>
-    </div>
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${colorClass}`}>
-      <Icon size={20} />
-    </div>
-  </div>
-);
 
 const LeaveManagementContent = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -123,117 +107,113 @@ const LeaveManagementContent = () => {
     <div className="p-4 md:p-8 lg:p-12 space-y-10 relative">
       
       {/* --- BANNER HEADER --- */}
-      <header>
-        <p className="text-slate-400 font-medium font-litera text-sm">Leave Management System</p>
-        <h2 className="text-4xl font-black text-white tracking-tight font-agenda mt-1">Approvals </h2>
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-black text-white md:text-start text-center tracking-tight font-agenda mt-1">Leave Approvals</h2>
+          <p className="mt-2 text-sm md:text-start text-center text-slate-400 max-w-xl">Monitor and manage approved leave requests. Search staff to view their leave schedules and contact details.</p>
+        </div>
       </header>
 
       {/* --- METRICS MACRO GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <LeaveStatCard 
-          title="Currently Out of Office" 
-          value={activeOnLeaveNow} 
-          subtitle="Active absence tracks running today" 
-          icon={CalendarDays} 
-          colorClass="border-orange-500/20 text-orange-400 bg-orange-500/5" 
-        />
-        <LeaveStatCard 
-          title="Scheduled Approved Leaves" 
-          value={upcomingAllocations} 
-          subtitle="Approved periods locked ahead" 
-          icon={Clock} 
-          colorClass="border-blue-500/20 text-blue-400 bg-blue-500/5" 
-        />
-        <LeaveStatCard 
-          title="Total Approved Records" 
-          value={totalApprovedArchives} 
-          subtitle="Complete finalized logs baseline" 
-          icon={UserCheck} 
-          colorClass="border-emerald-500/20 text-emerald-400 bg-emerald-500/5" 
-        />
+      <div className="grid grid-cols-3 gap-4 w-full">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Currently Out</p>
+            <p className="text-base font-normal text-white">{activeOnLeaveNow}</p>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Upcoming Leaves</p>
+            <p className="text-base font-normal text-white">{upcomingAllocations}</p>
+          </div>
+        </div>
+        <div className="bg-white p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-900/60">Total Approved</p>
+            <p className="text-base font-normal text-slate-900">{totalApprovedArchives}</p>
+          </div>
+        </div>
       </div>
 
       {/* --- MONITOR LEDGER PANEL --- */}
-      <section className="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/50 p-6 md:p-8 shadow-2xl backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div className="relative group w-full md:w-96">
+      <section className="bg-slate-900/40 rounded-lg border border-slate-800/50 p-2 lg:p-4 shadow-2xl backdrop-blur-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center justify-between mb-10">
+          <h3 className="text-2xl font-black text-white font-agenda text-center">Leave Records</h3>
+          <div className="relative group w-full lg:max-w-sm">
             <input 
               type="search" 
-              placeholder="Filter by staff name, ID, or leave type..." 
+              placeholder="Search by name, ID, or type..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-900/50 border border-slate-800 text-slate-200 pl-12 pr-6 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full transition-all text-sm" 
+              className="bg-slate-900/80 border border-slate-800 text-slate-200 pl-12 pr-4 py-3.5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full transition-all text-sm" 
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
           </div>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Status: Administrative Verified Only</p>
         </div>
 
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
-              <Loader2 className="animate-spin text-orange-500" size={32} />
-              <p className="text-xs uppercase tracking-widest font-black font-litera">Querying Leave Vectors...</p>
-            </div>
-          ) : (
-            <table className="w-full text-left border-separate border-spacing-y-3 min-w-[850px]">
-              <thead>
-                <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera pl-4">
-                  <th className="pb-3 pl-6">Name</th>
-                  <th className="pb-3">Leave Details</th>
-                  <th className="pb-3">Duration</th>
-                  <th className="pb-3">Start-End Date</th>
-                  <th className="pb-3 pr-6 text-right">View Details</th>
-                </tr>
-              </thead>
-              <tbody>
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
+            <Loader2 className="animate-spin text-orange-500" size={32} />
+            <p className="text-xs uppercase tracking-widest font-black font-litera">Loading Leave Records...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="min-w-full">
+              <div className="hidden md:grid grid-cols-5 px-6 mb-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] font-litera">
+                <div className="col-span-2">Employee Name</div>
+                <div>Leave Type</div>
+                <div>Duration</div>
+                <div className="text-right">Dates</div>
+              </div>
+
+              <div className="space-y-3">
                 {filteredRequests.map((req) => {
                   const startFormatted = new Date(req.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
                   const endFormatted = new Date(req.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                   
                   return (
-                    <tr 
+                    <div 
                       key={req._id} 
                       onClick={() => handleRowClick(req)}
-                      className="bg-slate-800/10 border border-slate-800/30 rounded-[1.5rem] hover:bg-slate-800/40 transition-all group cursor-pointer"
+                      className="grid grid-cols-1 md:grid-cols-5 items-start gap-4 md:items-center bg-slate-800/20 border border-slate-800/30 p-4 rounded-[1.5rem] hover:bg-slate-800/40 transition-all cursor-pointer group"
                     >
-                      <td className="py-4 pl-6 rounded-l-[1.5rem]">
-                        <div>
-                          <p className="font-bold text-white font-litera leading-tight group-hover:text-orange-400 transition-colors">{req.name}</p>
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-0.5">ID: #{req.employeeId}</p>
+                      <div className="md:col-span-2 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center font-bold text-slate-950 shadow-lg flex-shrink-0">
+                          {req.name.split(' ').map(n => n[0]).join('')}
                         </div>
-                      </td>
-                      <td className="py-4">
-                        <span className={`px-3 py-1 rounded-md text-[11px] font-bold ${
-                          req.type === 'Sick Leave' ? 'text-rose-400 bg-rose-500/5 border border-rose-500/10' :
-                          req.type === 'Annual Leave' ? 'text-blue-400 bg-blue-500/5 border border-blue-500/10' :
-                          'text-indigo-400 bg-indigo-500/5 border border-indigo-500/10'
-                        }`}>
+                        <div>
+                          <p className="font-bold text-white font-litera leading-tight group-hover:text-blue-400 transition-colors">{req.name}</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">ID: #{req.employeeId}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Leave Type</span>
+                        <span className={`px-3 py-1.5 rounded-md text-[11px] font-bold inline-flex ${req.type === 'Sick Leave' ? 'text-rose-400 bg-rose-500/5 border border-rose-500/10' : req.type === 'Annual Leave' ? 'text-blue-400 bg-blue-500/5 border border-blue-500/10' : 'text-indigo-400 bg-indigo-500/5 border border-indigo-500/10'}`}>
                           {req.type}
                         </span>
-                      </td>
-                      <td className="py-4 font-bold text-slate-200 text-sm font-litera">
+                      </div>
+                      <div className="text-slate-400 font-medium text-sm">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1">Duration</span>
                         {req.days} {req.days === 1 ? 'Day' : 'Days'}
-                      </td>
-                      <td className="py-4 text-slate-400 text-xs font-medium font-poppins">
+                      </div>
+                      <div className="text-slate-400 font-medium text-sm font-poppins text-right md:text-right">
+                        <span className="block md:hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1 text-left">Dates</span>
                         {startFormatted} — {endFormatted}
-                      </td>
-                      <td className="py-4 pr-6 rounded-r-[1.5rem] text-right text-slate-500 group-hover:text-slate-300 text-xs font-bold font-litera transition-colors">
-                        View Details →
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          )}
 
-          {!loading && filteredRequests.length === 0 && (
-            <div className="text-center py-12 text-slate-500 font-medium text-sm font-poppins">
-              No approved leave requests found.
+                {filteredRequests.length === 0 && (
+                  <div className="text-center py-12 text-slate-500 font-medium text-sm font-poppins">
+                    No approved leave requests found.
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* =========================================================

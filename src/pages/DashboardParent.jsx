@@ -5,6 +5,7 @@ import EmployeesContent from '../components/dashboard/EmployeesContent';
 import SettingsContent from '../components/dashboard/SettingsContent';
 import LeaveManagementContent from '../components/dashboard/LeaveManagementContent';
 import PayrollContent from '../components/dashboard/PayrollContent';
+import NotificationContent from '../components/dashboard/NotificationContent';
 
 const DashboardParent = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -33,7 +34,7 @@ const DashboardParent = () => {
       settings: <SettingsContent user={userData} />,
       payroll: <PayrollContent user={userData} />,
       leaves: <LeaveManagementContent user={userData} />,
-      calculator: <div className="p-10 text-slate-400 font-agenda">Calculator Section (Coming Soon)</div>,
+      notifications: <NotificationContent user={userData} />,
     };
 
     return sections[activeSection] || sections.dashboard;

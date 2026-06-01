@@ -1,65 +1,63 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../api/axios';
 import { 
-  TrendingUp, 
-  Calendar, 
-  Clock, 
-  ArrowUpRight, 
-  DollarSign, 
+  Loader2,
   AlertCircle,
   CheckCircle2,
-  Loader2
+  Clock,
 } from 'lucide-react';
 
-const QuickStat = ({ title, value, change, icon: Icon }) => (
-  <div className="bg-slate-900/40 border border-slate-800 p-3 md:p-6 rounded-sm hover:border-slate-700 transition-all group items-center justify-center text-center">
-    <div className="flex justify-between items-center mb-4">
-      <div className="text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all p-1.5 rounded-lg">
-        <Icon size={20} />
-      </div>
-      <span className="flex items-center text-emerald-400 text-[10px] font-black bg-emerald-400/10 px-2 py-1 rounded-lg">
-        {change} <ArrowUpRight size={12} className="ml-1" />
-      </span>
-    </div>
-    <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] font-litera">{title}</p>
-    <h4 className="text-xl md:text-2xl font-black text-white/80 mt-1 font-agenda tracking-wide">ZK {value}</h4>
-  </div>
-);
-
+// =========================================================
+// MAIN CORE DASHBOARD CONTAINER
+// =========================================================
 const DashboardContent = ({ user }) => {
-  // =========================================================
-  // AUTOMATED CALCULATION STATE MANAGEMENT HOOKS
-  // =========================================================
   const [payrollData, setPayrollData] = useState(null);
+  const [variances, setVariances] = useState({ gross: 0, deductions: 0, net: 0, avg: 0 });
   const [loading, setLoading] = useState(true);
   const [processingCycle, setProcessingCycle] = useState(false);
+  
   const currentMonthYear = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(new Date());
 
-  // Fetch current month's computed state if it exists, otherwise trigger clean initial parameters
+  // Helper calculation engine to deduce growth variances
+  const calculateVariance = (current, previous) => {
+    if (!previous || previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
+
   const fetchActivePayrollState = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch calculation metrics based on the active timeframe
-      const response = await api.get(`/api/payroll/summary?monthYear=${encodeURIComponent(currentMonthYear || "May 2026")}`);
+      const response = await api.get(`/api/payroll/summary?monthYear=${encodeURIComponent(currentMonthYear || "June 2026")}`);
       const data = response.data;
-      setPayrollData(data.summaryTotals || {
-        totalGrossPay: 0,
-        totalDeductions: 0,
-        totalNetPay: 0,
-        averageSalary: 0,
-        pipelineProgress: 0,
-        steps: { attendance: 'done', tax: 'pending', disbursement: 'pending' }
+
+      // Expecting backend structural layout to provide current metrics vs historic baseline records
+      const currentTotals = data.summaryTotals || {};
+      const historicTotals = data.previousTotals || {};
+
+      setPayrollData(currentTotals);
+
+      // Compute calculations changes instantly
+      const currentGross = currentTotals.totalGrossPay || 0;
+      const prevGross = historicTotals.totalGrossPay || 0;
+      
+      const currentDeductions = currentTotals.totalDeductions || (currentTotals.totalPAYE + currentTotals.totalNAPSA + currentTotals.totalNHIMA) || 0;
+      const prevDeductions = historicTotals.totalDeductions || (historicTotals.totalPAYE + historicTotals.totalNAPSA + historicTotals.totalNHIMA) || 0;
+
+      const currentNet = currentTotals.totalNetPay || 0;
+      const prevNet = historicTotals.totalNetPay || 0;
+
+      const currentAvg = currentTotals.averageSalary || (currentGross / (currentTotals.headcount || 1));
+      const prevAvg = historicTotals.averageSalary || (prevGross / (historicTotals.headcount || 1));
+
+      setVariances({
+        gross: calculateVariance(currentGross, prevGross),
+        deductions: calculateVariance(currentDeductions, prevDeductions),
+        net: calculateVariance(currentNet, prevNet),
+        avg: calculateVariance(currentAvg, prevAvg)
       });
+
     } catch (err) {
       console.error("Error connecting to payroll data endpoints:", err);
-      setPayrollData({
-        totalGrossPay: 0,
-        totalDeductions: 0,
-        totalNetPay: 0,
-        averageSalary: 0,
-        pipelineProgress: 0,
-        steps: { attendance: 'done', tax: 'pending', disbursement: 'pending' }
-      });
     } finally {
       setLoading(false);
     }
@@ -69,25 +67,35 @@ const DashboardContent = ({ user }) => {
     fetchActivePayrollState();
   }, [fetchActivePayrollState]);
 
-  // =========================================================
-  // TRIGGER BATCH RUNNER CALCULATIONS FUNCTION
-  // =========================================================
   const handleRunPayrollCycle = async () => {
     try {
       setProcessingCycle(true);
-      const response = await api.post('/api/payroll/run', { monthYear: currentMonthYear || "May 2026" });
+      const response = await api.post('/api/payroll/run', { monthYear: currentMonthYear || "June 2026" });
       const resData = response.data;
       if (response.status >= 400) throw new Error(resData.message || "Failed execution engine loops.");
 
-      // Hydrate local state fields instantly with backend computational matrix aggregates
+      const activeGross = resData.summaryTotals.totalGrossPay;
+      const activeDeductions = resData.summaryTotals.totalPAYE + resData.summaryTotals.totalNAPSA + resData.summaryTotals.totalNHIMA;
+      const activeNet = resData.summaryTotals.totalNetPay;
+      const activeAvg = activeGross / (resData.summaryTotals.headcount || 1);
+
       setPayrollData({
-        totalGrossPay: resData.summaryTotals.totalGrossPay,
-        totalDeductions: resData.summaryTotals.totalPAYE + resData.summaryTotals.totalNAPSA + resData.summaryTotals.totalNHIMA,
-        totalNetPay: resData.summaryTotals.totalNetPay,
-        averageSalary: resData.summaryTotals.totalGrossPay / resData.summaryTotals.headcount,
-        pipelineProgress: 100, // Process completed
+        totalGrossPay: activeGross,
+        totalDeductions: activeDeductions,
+        totalNetPay: activeNet,
+        averageSalary: activeAvg,
+        pipelineProgress: 100,
         steps: { attendance: 'done', tax: 'done', disbursement: 'done' }
       });
+
+      // Recalculate variance values with refreshed numbers post-run
+      setVariances(prev => ({
+        ...prev,
+        gross: calculateVariance(activeGross, resData.previousTotals?.totalGrossPay || 0),
+        deductions: calculateVariance(activeDeductions, resData.previousTotals?.totalDeductions || 0),
+        net: calculateVariance(activeNet, resData.previousTotals?.totalNetPay || 0),
+        avg: calculateVariance(activeAvg, resData.previousTotals?.averageSalary || 0)
+      }));
 
     } catch (err) {
       alert(`Calculation Engine Alert: ${err.message}`);
@@ -96,13 +104,19 @@ const DashboardContent = ({ user }) => {
     }
   };
 
-  // Helper utility to format raw currency balances safely into clean string vectors
   const formatCurrencyValue = (num) => {
-    if (!num) return "0.0";
-    if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)}k`;
+    const formatter = new Intl.NumberFormat('en-ZM', {
+      style: 'currency',
+      currency: 'ZMW',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    if (num === null || num === undefined || Number.isNaN(num)) {
+      return formatter.format(0);
     }
-    return num.toFixed(2);
+
+    return formatter.format(Number(num));
   };
 
   if (loading) {
@@ -114,7 +128,6 @@ const DashboardContent = ({ user }) => {
     );
   }
 
-  // Active steps layout matrix based on current database state tracking parameters
   const pipelineSteps = [
     { label: 'Attendance', status: payrollData?.steps?.attendance || 'done' },
     { label: 'Tax & NAPSA', status: payrollData?.steps?.tax || 'pending' },
@@ -122,38 +135,44 @@ const DashboardContent = ({ user }) => {
   ];
 
   return (
-    <div className="p-4 md:p-8 lg:p-12 space-y-8 md:space-y-10">
+    <div className="p-2 lg:p-4 space-y-10 relative">
       
-      {/* --- WELCOME HEADER --- */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1 text-center md:text-left">
-          <h2 className="text-3xl md:text-4xl font-black text-white tracking-normal font-agenda leading-tight">
-            Welcome back,{" "}
-            <span className="text-blue-500">
-              {user?.firstName || 'Caleb'}
-            </span>
-            !
-          </h2>
-        </div>
-        
-        <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-sm flex items-center justify-center gap-3 text-slate-300 font-bold text-xs md:text-sm shadow-xl self-center md:self-auto uppercase tracking-wider font-litera">
-          <Calendar size={18} className="text-blue-500" />
-          {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+      {/* --- TOP HEADER --- */}
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-black text-white md:text-start text-center tracking-tight font-agenda mt-1">Dashboard</h2>
+          <p className="mt-2 text-sm md:text-start text-center text-slate-400 max-w-xl">Welcome back, {user?.firstName || 'HR Manager'}! Monitor payroll metrics, compliance deadlines, and pipeline progress.</p>
         </div>
       </header>
 
-      {/* --- QUICK STATS GRID --- */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <QuickStat title="Gross Pay" value={formatCurrencyValue(payrollData?.totalGrossPay)} change="+12%" icon={DollarSign} />
-        <QuickStat title="Deductions" value={formatCurrencyValue(payrollData?.totalDeductions)} change="+4%" icon={AlertCircle} />
-        <QuickStat title="Net Pay" value={formatCurrencyValue(payrollData?.totalNetPay)} change="+8%" icon={Clock} />
-        <QuickStat title="Avg Salary" value={formatCurrencyValue(payrollData?.averageSalary || (payrollData?.totalGrossPay / 10))} change="+2%" icon={TrendingUp} />
+      {/* --- AUTOMATED STATS GRID --- */}
+      <div className="grid grid-cols-3 gap-4 w-full">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Gross Pay</p>
+            <p className="text-base font-normal text-white">{formatCurrencyValue(payrollData?.totalGrossPay)}</p>
+            <p className="text-[10px] text-white/60 font-bold">{variances.gross > 0 ? '+' : ''}{variances.gross.toFixed(1)}%</p>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">Net Pay</p>
+            <p className="text-base font-normal text-white">{formatCurrencyValue(payrollData?.totalNetPay)}</p>
+            <p className="text-[10px] text-white/60 font-bold">{variances.net > 0 ? '+' : ''}{variances.net.toFixed(1)}%</p>
+          </div>
+        </div>
+        <div className="bg-white p-4 w-full rounded-lg flex flex-col sm:flex-row text-center items-center justify-center gap-3 shadow-xl transition-all duration-300">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-900/60">Avg Salary</p>
+            <p className="text-base font-normal text-slate-900">{formatCurrencyValue(payrollData?.averageSalary || (payrollData?.totalGrossPay / (payrollData?.headcount || 10)))}</p>
+            <p className="text-[10px] text-slate-600 font-bold">{variances.avg > 0 ? '+' : ''}{variances.avg.toFixed(1)}%</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* --- PAYROLL PROGRESS TRACKER --- */}
-        <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-sm p-6 md:p-8 space-y-6 md:space-y-8 backdrop-blur-md">
+        <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/50 rounded-lg p-4 lg:p-6 space-y-6 backdrop-blur-sm">
           <div className="flex justify-between items-center">
             <h3 className="text-lg md:text-xl font-black text-white font-agenda">Payroll Pipeline</h3>
             <button className="text-blue-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest">
@@ -182,9 +201,9 @@ const DashboardContent = ({ user }) => {
             {/* Steps grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                {pipelineSteps.map((step) => (
-                 <div key={step.label} className={`p-4 rounded-sm border transition-all ${step.status === 'done' ? 'bg-blue-600/5 border-blue-600/10' : 'bg-slate-800/20 border-slate-800'} scaling-effect`}>
+                 <div key={step.label} className={`p-4 rounded-lg border transition-all ${step.status === 'done' ? 'bg-blue-600/5 border-blue-600/10' : 'bg-slate-800/20 border-slate-800'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                        {step.status === 'done' ? <CheckCircle2 size={12} className="text-blue-500" /> : <Clock size={12} className="text-slate-600" />}
+                        {step.status === 'done' ? <CheckCircle2 size={12} className="text-blue-500" /> : <AlertCircle size={12} className="text-slate-600" />}
                         <p className={`text-[8px] font-black uppercase ${step.status === 'done' ? 'text-blue-500' : 'text-slate-600'}`}>
                             {step.status === 'done' ? 'Done' : 'Next'}
                         </p>
@@ -197,11 +216,11 @@ const DashboardContent = ({ user }) => {
         </div>
 
         {/* --- COMPLIANCE & ACTIONS --- */}
-        <div className="bg-slate-900 rounded-sm p-6 md:p-8 border border-slate-800 relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-slate-900/40 rounded-lg p-4 lg:p-6 border border-slate-800/50 flex flex-col justify-between backdrop-blur-sm">
           <div>
             <h3 className="text-lg md:text-xl font-black text-white font-agenda mb-6">Compliance</h3>
             <div className="space-y-3 relative z-10">
-              <div className="flex items-center gap-4 p-4 rounded-sm bg-orange-500/10 border border-orange-500/20">
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
                 <div className="p-2 rounded-lg bg-orange-500 text-slate-900"><AlertCircle size={18} strokeWidth={3} /></div>
                 <div>
                   <p className="text-sm font-bold text-white">ZRA PAYE</p>
@@ -209,7 +228,7 @@ const DashboardContent = ({ user }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 p-4 rounded-sm bg-indigo-500/10 border border-indigo-500/20">
+              <div className="flex items-center gap-4 p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
                 <div className="p-2 rounded-lg bg-indigo-500 text-white"><Clock size={18} strokeWidth={3} /></div>
                 <div>
                   <p className="text-sm font-bold text-white">NAPSA</p>
@@ -222,12 +241,12 @@ const DashboardContent = ({ user }) => {
           <button 
             disabled={processingCycle}
             onClick={handleRunPayrollCycle}
-            className="w-full mt-8 bg-white text-slate-950 p-4 rounded-xl font-black font-agenda text-xs md:text-sm hover:bg-slate-100 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full mt-8 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white p-4 rounded-lg font-black text-xs md:text-sm transition-all flex items-center justify-center gap-2"
           >
             {processingCycle ? (
               <>
-                <Loader2 className="animate-spin text-slate-950" size={16} />
-                <span>Running Engine Math...</span>
+                <Loader2 className="animate-spin" size={16} />
+                <span>Running Payroll...</span>
               </>
             ) : (
               "Run Payroll Cycle"
